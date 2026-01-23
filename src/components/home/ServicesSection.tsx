@@ -1,0 +1,152 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useInView } from "framer-motion";
+
+const services = [
+  "CONSEIL",
+  "GRAPHISME",
+  "SITE WEB",
+  "VIDÉO",
+  "MOTION DESIGN",
+  "COMMUNITY",
+  "CROSSFUNDING",
+];
+
+const subServices: Record<string, string[]> = {
+  CONSEIL: ["service 1", "service 2", "service 3", "service 4"],
+  GRAPHISME: ["Identité visuelle", "Affiche", "Flyer", "Brochure"],
+  "SITE WEB": ["service 1", "service 2", "service 3", "service 4"],
+  VIDÉO: ["service 1", "service 2", "service 3", "service 4"],
+  "MOTION DESIGN": ["service 1", "service 2", "service 3", "service 4"],
+  COMMUNITY: ["service 1", "service 2", "service 3", "service 4"],
+  CROSSFUNDING: ["service 1", "service 2", "service 3", "service 4"],
+};
+
+const serviceImages: Record<string, string> = {
+  CONSEIL: "/images/decorations/light_bulb.png",
+  GRAPHISME: "/images/decorations/hand_with_pen.png",
+  "SITE WEB": "/images/decorations/computer.png",
+  VIDÉO: "/images/decorations/camera.png",
+};
+
+export function ServicesSection() {
+  const [activeService, setActiveService] = useState<string | null>(null);
+  const [hasTriggered, setHasTriggered] = useState(false);
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    if (isInView && !hasTriggered) {
+      // Petit délai pour que l'animation soit visible
+      const timer = setTimeout(() => {
+        setActiveService("CONSEIL");
+        setHasTriggered(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isInView, hasTriggered]);
+
+  const handleClick = (service: string) => {
+    setActiveService(activeService === service ? null : service);
+  };
+
+  return (
+    <section ref={sectionRef} className="relative overflow-hidden bg-sunglow py-12 sm:py-16 lg:py-20">
+      {/* Service illustration - bottom right, overflowing */}
+      {activeService && serviceImages[activeService] && (
+        <div className="pointer-events-none absolute -bottom-32 right-0 hidden sm:block md:-bottom-40 md:right-8 lg:-bottom-48 lg:right-16">
+          <Image
+            src={serviceImages[activeService]}
+            alt=""
+            width={1000}
+            height={1000}
+            className="h-96 w-auto opacity-50 md:h-128 lg:h-160 xl:h-192"
+            aria-hidden="true"
+          />
+        </div>
+      )}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Title - top right */}
+        <h2 className="mb-8 text-right font-montserrat text-4xl font-semibold text-white sm:mb-12 sm:text-5xl lg:text-6xl xl:text-7xl">
+          NOS SERVICES
+        </h2>
+
+        {/* Content - Services list + Sub-services */}
+        <div className="relative mb-8 flex flex-col gap-8 sm:mb-12 sm:flex-row sm:justify-between">
+          {/* Services list */}
+          <ul className="space-y-1 sm:space-y-4 lg:space-y-6">
+            {services.map((service) => {
+              const isActive = activeService === service;
+              return (
+                <li key={service}>
+                  <button
+                    onClick={() => handleClick(service)}
+                    className={`relative font-montserrat text-xl transition-all duration-300 hover:-translate-y-1 sm:text-2xl md:text-3xl lg:text-4xl ${
+                      isActive ? "translate-x-2 font-bold text-[#1e2952] sm:translate-x-4" : "font-light text-white"
+                    }`}
+                  >
+                    <span className="relative z-10">{service}</span>
+                    <span
+                      className={`absolute bottom-0 left-0 h-1.5 bg-white transition-all duration-300 sm:h-2 md:h-3 lg:h-4 ${
+                        isActive ? "w-full opacity-100" : "w-0 opacity-0"
+                      }`}
+                      style={{ marginLeft: "0.5rem", width: isActive ? "calc(100% + 0.5rem)" : "0" }}
+                    />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Sub-services list - aligned under "NOS SERVICES" title */}
+          <div className="hidden w-70 text-left sm:block sm:w-80 md:w-100 lg:w-120 xl:w-130">
+            {activeService && (
+              <ul className="space-y-1 sm:space-y-2 lg:space-y-3">
+                {subServices[activeService]?.map((subService) => (
+                  <li
+                    key={subService}
+                    className="font-montserrat font-light text-base text-white transition-all duration-300 sm:text-lg md:text-xl lg:text-2xl"
+                  >
+                    {subService}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {/* Mobile sub-services */}
+          <div className="text-left sm:hidden">
+            {activeService && (
+              <ul className="space-y-1">
+                {subServices[activeService]?.map((subService) => (
+                  <li
+                    key={subService}
+                    className="font-montserrat font-light text-base text-white"
+                  >
+                    {subService}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* CTA Button */}
+        <div className="flex justify-center">
+          <span className="group relative inline-block">
+            {/* Shadow */}
+            <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-full bg-[#1e2952] transition-transform duration-200 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
+            <Link
+              href="/services"
+              className="relative z-10 block rounded-full bg-white px-8 py-3 font-montserrat text-sm font-medium text-sunglow transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 sm:px-10 sm:py-4 sm:text-base"
+            >
+              Mettre en lumière
+            </Link>
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
