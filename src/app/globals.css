@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/* Spotlight Identity - Colors & Fonts */
+@theme {
+  /* Colors */
+  --color-raisin: #1E1E24;
+  --color-indigo: #8B80F9;
+  --color-violet: #c9a0dc;
+  --color-sunglow: #FCCA46;
+  --color-isabelline: #EEE7E8;
+  --color-cream: #f4f0ec;
+  --color-white: #FFFFFF;
+
+  /* Fonts - using CSS variables from Next.js localFont */
+  --font-avenir: var(--font-avenir), system-ui, sans-serif;
+  --font-montserrat: var(--font-montserrat), system-ui, sans-serif;
+  --font-brittany: var(--font-brittany), cursive;
+}
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #1E1E24;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat);
+}
+
+/* Headings default to Avenir */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-avenir);
+}
+
+/* Utility class for Brittany script font */
+.font-brittany {
+  font-family: var(--font-brittany);
+}
+
+/* Custom animations */
+@keyframes fadeInSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-slide-down {
+  animation: fadeInSlideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s forwards;
+  opacity: 0;
+}
+
+.animate-pop-in {
+  animation: popIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
