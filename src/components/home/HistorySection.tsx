@@ -46,7 +46,9 @@ const teamPhotos = [
 
 export function HistorySection() {
   const collageRef = useRef(null);
+  const titleRef = useRef(null);
   const isInView = useInView(collageRef, { once: true, margin: "-100px" });
+  const isTitleInView = useInView(titleRef, { once: true, margin: "-50px" });
 
   return (
     <section className="relative bg-cream py-12 sm:py-16 lg:py-20 overflow-hidden">
@@ -65,35 +67,40 @@ export function HistorySection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           {/* Left side - Title and button */}
-          <div className="mt-30 lg:mt-30 relative flex flex-col items-start lg:w-1/3">
+          <div ref={titleRef} className="mt-30 lg:mt-30 relative flex flex-col items-start lg:w-1/3">
             <h2 className="font-avenir font-black text-[#1e2952] text-5xl sm:text-7xl lg:text-8xl xl:text-[6rem]">
-              <span className="relative inline-block">
-                <span className="relative z-10">NOTRE</span>
-                <span
-                  className="absolute bottom-1 left-0 z-0 h-3 bg-sunglow sm:h-4 lg:h-5"
-                  style={{ width: "calc(100% + 0.5rem)", marginLeft: "-0.25rem" }}
-                />
+              <span
+                style={{
+                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
+                  backgroundSize: isTitleInView ? "100% 0.35em" : "0% 0.35em",
+                  transition: "background-size 1s ease-out",
+                  boxDecorationBreak: "clone",
+                  WebkitBoxDecorationBreak: "clone",
+                }}
+              >
+                NOTRE
               </span>
               <br />
-              <span className="relative inline-block">
-                <span className="relative z-10">HISTOIRE</span>
-                <span
-                  className="absolute bottom-1 left-0 z-0 h-3 bg-sunglow sm:h-4 lg:h-5"
-                  style={{ width: "calc(100% + 0.5rem)", marginLeft: "-0.25rem" }}
-                />
+              <span
+                style={{
+                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
+                  backgroundSize: isTitleInView ? "100% 0.35em" : "0% 0.35em",
+                  transition: "background-size 1s ease-out",
+                  transitionDelay: "200ms",
+                  boxDecorationBreak: "clone",
+                  WebkitBoxDecorationBreak: "clone",
+                }}
+              >
+                HISTOIRE
               </span>
             </h2>
 
-            <span className="group relative mx-auto mt-6 inline-block sm:mt-8">
-              {/* Shadow */}
-              <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-full bg-sunglow transition-transform duration-200 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
-              <Link
-                href="/about"
-                className="relative z-10 block rounded-full bg-violet px-6 py-2 font-montserrat text-sm text-white transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 sm:px-8 sm:py-3 sm:text-base"
-              >
-                en savoir plus...
-              </Link>
-            </span>
+            <Link
+              href="/about"
+              className="mx-auto mt-6 inline-block rounded-full bg-violet px-6 py-2 font-montserrat text-sm text-white transition-colors duration-200 hover:bg-violet/70 sm:mt-8 sm:px-8 sm:py-3 sm:text-base"
+            >
+              en savoir plus...
+            </Link>
           </div>
 
           {/* Right side - Team photos collage */}

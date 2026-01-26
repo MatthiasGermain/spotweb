@@ -254,16 +254,12 @@ export function TestimonialsSection() {
 
         {/* CTA Button - centered */}
         <div className="mt-10 flex justify-center sm:mt-12">
-          <span className="group relative inline-block">
-            {/* Shadow */}
-            <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-full bg-sunglow transition-transform duration-200 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
-            <Link
-              href="/contact"
-              className="relative z-10 block rounded-full border-2 border-white bg-[#1e2952] px-6 py-2 font-montserrat text-sm font-medium text-white transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 sm:px-8 sm:py-3 sm:text-base"
-            >
-              Tu veux en faire parti?
-            </Link>
-          </span>
+          <Link
+            href="/contact"
+            className="inline-block rounded-full border-2 border-white bg-[#1e2952] px-6 py-2 font-montserrat text-sm font-medium text-white transition-colors duration-200 hover:bg-[#1e2952]/70 sm:px-8 sm:py-3 sm:text-base"
+          >
+            Tu veux en faire parti?
+          </Link>
         </div>
       </div>
     </section>

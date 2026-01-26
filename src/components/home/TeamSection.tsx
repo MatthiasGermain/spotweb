@@ -90,7 +90,7 @@ function TeamMemberCard({ member, isExpanded, onToggle, isMobile }: TeamMemberCa
       )}
       {/* Desktop: hover overlay */}
       {!isMobile && (
-        <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[#628f93] p-4 transition-transform duration-300 group-hover:translate-y-0">
+        <div className="absolute inset-x-0 bottom-0 translate-y-full opacity-90 bg-[#628f93] p-4 transition-transform duration-300 group-hover:translate-y-0">
           <p className="font-avenir text-lg font-bold text-white md:text-xl">{member.name}</p>
           <p className="font-montserrat text-sm font-medium text-white">{member.role}</p>
           <div className="mt-2 flex gap-2">
@@ -138,20 +138,29 @@ export function TeamSection() {
         {/* Title with violet underline */}
         <div className="mb-6 sm:mb-10 lg:mb-12">
           <h2 className="font-montserrat text-2xl font-bold text-[#1e2952] sm:text-4xl lg:text-5xl">
-            <span className="relative inline-block">
-              <span className="relative z-10">UNE ÉQUIPE CRÉATIVE</span>
-              <span
-                className="absolute bottom-0.5 left-0 z-0 h-1.5 bg-violet sm:bottom-1 sm:h-3 lg:h-4"
-                style={{ width: "calc(100% + 1rem)", marginLeft: "-0.5rem" }}
-              />
+            <span
+              style={{
+                background: "linear-gradient(var(--color-violet), var(--color-violet)) no-repeat 0 90%",
+                backgroundSize: isInView ? "100% 0.25em" : "0% 0.25em",
+                transition: "background-size 1s ease-out",
+                boxDecorationBreak: "clone",
+                WebkitBoxDecorationBreak: "clone",
+              }}
+            >
+              UNE ÉQUIPE CRÉATIVE
             </span>
             <br />
-            <span className="relative inline-block">
-              <span className="relative z-10">ET CONNECTÉE</span>
-              <span
-                className="absolute bottom-0.5 left-0 z-0 h-1.5 bg-violet sm:bottom-1 sm:h-3 lg:h-4"
-                style={{ width: "calc(100% + 1rem)", marginLeft: "-0.5rem" }}
-              />
+            <span
+              style={{
+                background: "linear-gradient(var(--color-violet), var(--color-violet)) no-repeat 0 90%",
+                backgroundSize: isInView ? "100% 0.25em" : "0% 0.25em",
+                transition: "background-size 1s ease-out",
+                transitionDelay: "200ms",
+                boxDecorationBreak: "clone",
+                WebkitBoxDecorationBreak: "clone",
+              }}
+            >
+              ET CONNECTÉE
             </span>
           </h2>
         </div>

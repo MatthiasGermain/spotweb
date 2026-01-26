@@ -101,50 +101,60 @@ export function ServicesSection() {
             })}
           </ul>
 
-          {/* Sub-services list - aligned under "NOS SERVICES" title */}
-          <div className="hidden w-70 text-left sm:block sm:w-80 md:w-100 lg:w-120 xl:w-130">
+          {/* Sub-services grid - Desktop */}
+          <div className="hidden sm:flex sm:flex-col sm:items-end">
             {activeService && (
-              <ul className="space-y-1 sm:space-y-2 lg:space-y-3">
-                {subServices[activeService]?.map((subService) => (
-                  <li
-                    key={subService}
-                    className="font-montserrat font-light text-base text-white transition-all duration-300 sm:text-lg md:text-xl lg:text-2xl"
-                  >
-                    {subService}
-                  </li>
-                ))}
-              </ul>
+              <div className="w-85 md:w-95 lg:w-110 xl:w-130">
+                <div className="grid grid-cols-2 gap-4 lg:gap-5">
+                  {subServices[activeService]?.map((subService, index) => (
+                    <div
+                      key={subService}
+                      className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white p-3 text-center transition-all duration-300"
+                      style={{
+                        opacity: 0,
+                        animation: `fadeIn 0.4s ease-out ${index * 100}ms forwards`,
+                      }}
+                    >
+                      <span className="font-montserrat text-sm font-semibold text-[#1e2952] md:text-base lg:text-lg">
+                        {subService}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
-          {/* Mobile sub-services */}
-          <div className="text-left sm:hidden">
+          {/* Sub-services grid - Mobile */}
+          <div className="sm:hidden">
             {activeService && (
-              <ul className="space-y-1">
-                {subServices[activeService]?.map((subService) => (
-                  <li
+              <div className="grid grid-cols-2 gap-3">
+                {subServices[activeService]?.map((subService, index) => (
+                  <div
                     key={subService}
-                    className="font-montserrat font-light text-base text-white"
+                    className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white p-3 text-center transition-all duration-300"
+                    style={{
+                      opacity: 0,
+                      animation: `fadeIn 0.4s ease-out ${index * 100}ms forwards`,
+                    }}
                   >
-                    {subService}
-                  </li>
+                    <span className="font-montserrat text-sm font-semibold text-[#1e2952]">
+                      {subService}
+                    </span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </div>
 
         {/* CTA Button */}
         <div className="flex justify-center">
-          <span className="group relative inline-block">
-            {/* Shadow */}
-            <span className="absolute inset-0 translate-x-1 translate-y-1 rounded-full bg-[#1e2952] transition-transform duration-200 group-hover:translate-x-1.5 group-hover:translate-y-1.5" />
-            <Link
-              href="/services"
-              className="relative z-10 block rounded-full bg-white px-8 py-3 font-montserrat text-sm font-medium text-sunglow transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:-translate-y-0.5 sm:px-10 sm:py-4 sm:text-base"
-            >
-              Mettre en lumière
-            </Link>
-          </span>
+          <Link
+            href="/services"
+            className="inline-block rounded-full bg-white px-8 py-3 font-montserrat text-sm font-medium text-sunglow transition-colors duration-200 hover:bg-white/70 sm:px-10 sm:py-4 sm:text-base"
+          >
+            Mettre en lumière
+          </Link>
         </div>
       </div>
     </section>

@@ -72,6 +72,17 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .animate-fade-slide-down {
   animation: fadeInSlideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }

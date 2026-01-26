@@ -31,7 +31,7 @@ export function Newsletter() {
             required
             className="flex-1 rounded-md border border-white/50 bg-white px-4 py-2 text-sm text-raisin placeholder:text-raisin/50 focus:border-indigo focus:outline-none focus:ring-1 focus:ring-indigo sm:w-64"
           />
-          <Button type="submit" variant="secondary" size="sm" withShadow>
+          <Button type="submit" variant="secondary" size="sm">
             Envoyer
           </Button>
         </form>
