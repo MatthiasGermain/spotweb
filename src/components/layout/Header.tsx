@@ -69,15 +69,8 @@ export function Header() {
       )}
 
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        {/* Mobile menu button */}
-        <div className="lg:hidden">
-          <StaggeredMenu
-            items={navigation}
-            socialItems={socialItems}
-            displaySocials={true}
-            displayItemNumbering={true}
-          />
-        </div>
+        {/* Mobile spacer - left */}
+        <div className="w-10 lg:hidden" />
 
         {/* Desktop navbar - left side */}
         <nav className="hidden lg:flex lg:items-center lg:gap-8">
@@ -130,8 +123,15 @@ export function Header() {
           )}
         </nav>
 
-        {/* Mobile spacer */}
-        <div className="w-10 lg:hidden" />
+        {/* Mobile menu button - right */}
+        <div className="lg:hidden">
+          <StaggeredMenu
+            items={navigation}
+            socialItems={socialItems}
+            displaySocials={true}
+            displayItemNumbering={true}
+          />
+        </div>
       </div>
     </header>
   );

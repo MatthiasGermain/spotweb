@@ -1,4 +1,5 @@
 import { Header, Footer, Newsletter } from "@/components/layout";
+import { ScrollToTop } from "@/components/ui";
 import { Hero } from "@/components/home/Hero";
 import { PresentationBanner } from "@/components/home/PresentationBanner";
 import { AboutSection } from "@/components/home/AboutSection";
@@ -24,6 +25,7 @@ export default function Home() {
       </main>
       <Newsletter />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

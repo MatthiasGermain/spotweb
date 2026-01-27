@@ -4,6 +4,7 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export interface StaggeredMenuItem {
   label: string;
@@ -32,6 +33,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   onMenuOpen,
   onMenuClose,
 }: StaggeredMenuProps) => {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
 
@@ -81,7 +83,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       }
       preLayerElsRef.current = preLayers;
 
-      gsap.set([panel, ...preLayers], { xPercent: -100 });
+      gsap.set([panel, ...preLayers], { xPercent: 100 });
 
       gsap.set(plusH, { transformOrigin: "50% 50%", rotate: 0 });
       gsap.set(plusV, { transformOrigin: "50% 50%", rotate: 90 });
@@ -239,7 +241,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     closeTweenRef.current?.kill();
 
     closeTweenRef.current = gsap.to(all, {
-      xPercent: -100,
+      xPercent: 100,
       duration: 0.32,
       ease: "power3.in",
       overwrite: "auto",
@@ -329,10 +331,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     openRef.current = target;
     setOpen(target);
 
+    // Scroll lock
     if (target) {
+      document.body.style.overflow = "hidden";
       onMenuOpen?.();
       playOpen();
     } else {
+      document.body.style.overflow = "";
       onMenuClose?.();
       playClose();
     }
@@ -345,6 +350,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     if (openRef.current) {
       openRef.current = false;
       setOpen(false);
+      document.body.style.overflow = ""; // Restore scroll
       onMenuClose?.();
       playClose();
       animateIcon(false);
@@ -422,13 +428,13 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         {/* Pre-layers for stagger effect */}
         <div
           ref={preLayersRef}
-          className="absolute top-0 left-0 bottom-0 w-full sm:w-80 md:w-96 lg:w-105 pointer-events-none"
+          className="absolute top-0 right-0 bottom-0 w-full sm:w-80 md:w-96 lg:w-105 pointer-events-none"
           aria-hidden="true"
         >
           {layerColors.map((color, i) => (
             <div
               key={i}
-              className="sm-prelayer absolute top-0 left-0 h-full w-full"
+              className="sm-prelayer absolute top-0 right-0 h-full w-full"
               style={{ background: color }}
             />
           ))}
@@ -438,7 +444,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         <aside
           id="staggered-menu-panel"
           ref={panelRef}
-          className="absolute top-0 left-0 h-full w-full sm:w-80 md:w-96 lg:w-105 bg-cream flex flex-col pt-24 pb-8 px-6 sm:px-8 overflow-y-auto pointer-events-auto"
+          className="absolute top-0 right-0 h-full w-full sm:w-80 md:w-96 lg:w-105 bg-cream flex flex-col pt-24 pb-8 px-6 sm:px-8 overflow-y-auto pointer-events-auto"
           style={
             {
               "--sm-accent": accentColor,
@@ -466,23 +472,31 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               data-numbering={displayItemNumbering || undefined}
             >
               {items && items.length ? (
-                items.map((item, idx) => (
-                  <li
-                    className="sm-panel-itemWrap relative overflow-hidden leading-none"
-                    key={item.label + idx}
-                  >
-                    <Link
-                      className="sm-panel-item relative text-raisin font-avenir font-bold text-2xl sm:text-3xl lg:text-4xl cursor-pointer leading-none tracking-tight uppercase transition-colors duration-150 ease-linear inline-flex items-baseline gap-2 no-underline hover:text-sunglow"
-                      href={item.href}
-                      onClick={closeMenu}
-                      data-index={idx + 1}
+                items.map((item, idx) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <li
+                      className="sm-panel-itemWrap relative overflow-hidden leading-none"
+                      key={item.label + idx}
                     >
-                      <span className="sm-panel-itemLabel inline-block origin-bottom-left will-change-transform">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </li>
-                ))
+                      <Link
+                        className={`sm-panel-item relative font-avenir font-bold text-2xl sm:text-3xl lg:text-4xl cursor-pointer leading-none tracking-tight uppercase transition-colors duration-150 ease-linear inline-flex items-baseline gap-2 no-underline ${
+                          isActive ? "text-sunglow" : "text-raisin hover:text-sunglow"
+                        }`}
+                        href={item.href}
+                        onClick={closeMenu}
+                        data-index={idx + 1}
+                      >
+                        <span className="sm-panel-itemLabel inline-block origin-bottom-left will-change-transform">
+                          {item.label}
+                        </span>
+                        {isActive && (
+                          <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-sunglow" />
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })
               ) : (
                 <li
                   className="sm-panel-itemWrap relative overflow-hidden leading-none"

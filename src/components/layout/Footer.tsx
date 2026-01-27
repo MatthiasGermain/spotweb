@@ -30,7 +30,7 @@ export function Footer() {
           {/* Social links */}
           <div className="flex items-center gap-5">
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/company/spotlightcrea"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white transition-colors hover:text-indigo"
@@ -39,7 +39,7 @@ export function Footer() {
               <Linkedin className="h-8 w-8" />
             </a>
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/spotlight.crea/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white transition-colors hover:text-indigo"
@@ -72,6 +72,13 @@ export function Footer() {
               </Link>
             ))}
           </nav>
+        </div>
+
+        {/* Copyright */}
+        <div className="border-t border-white/10 py-4 text-center">
+          <p className="text-xs text-white/50">
+            © {new Date().getFullYear()} Spotlight. Tous droits réservés.
+          </p>
         </div>
       </div>
     </footer>

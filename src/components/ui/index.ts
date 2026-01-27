@@ -4,3 +4,4 @@ export { Textarea } from "./Textarea";
 export { Select } from "./Select";
 export { Logo } from "./Logo";
 export { StaggeredMenu } from "./StaggeredMenu";
+export { ScrollToTop } from "./ScrollToTop";
