@@ -1,0 +1,21 @@
+name: Notify Teams on Push
+
+on:
+  push:
+    branches:
+      - main  # Ou '*' pour toutes les branches
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification to Power Automate
+        run: |
+          curl -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "repository": "${{ github.repository }}",
+            "commit_message": "${{ github.event.head_commit.message }}",
+            "author": "${{ github.actor }}",
+            "url": "${{ github.event.head_commit.url }}"
+          }'
