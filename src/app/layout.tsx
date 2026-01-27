@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ViewTransitions } from "next-view-transitions";
 import "./globals.css";
 
 const montserrat = localFont({
@@ -45,10 +46,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
-      <body className={`${montserrat.variable} ${avenir.variable} ${brittany.variable} antialiased`}>
-        {children}
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="fr">
+        <body className={`${montserrat.variable} ${avenir.variable} ${brittany.variable} antialiased`}>
+          {children}
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

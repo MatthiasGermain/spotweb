@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { motion, LayoutGroup, useInView } from "framer-motion";
 
 const teamMembers = [

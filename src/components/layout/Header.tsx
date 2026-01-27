@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { Button, Logo, StaggeredMenu } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -18,10 +18,31 @@ const socialItems = [
   { label: "LinkedIn", link: "https://www.linkedin.com/company/spotlightcrea" },
 ];
 
+// Theme config par page
+const pageThemes: Record<string, { bg: string; text: string; logo: string; glass: string; underline: string }> = {
+  "/contact": {
+    bg: "bg-sunglow",
+    text: "text-white",
+    logo: "text-white",
+    glass: "lg:bg-sunglow/80",
+    underline: "bg-white",
+  },
+};
+
+const defaultTheme = {
+  bg: "bg-cream",
+  text: "text-raisin",
+  logo: "text-violet",
+  glass: "lg:bg-cream/70",
+  underline: "bg-sunglow",
+};
+
 export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  const theme = pageThemes[pathname] || defaultTheme;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,8 +70,9 @@ export function Header() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ease-out bg-cream",
-        showGlassEffect && "lg:bg-cream/70 lg:backdrop-blur-xl lg:shadow-lg lg:shadow-raisin/5 lg:border-b lg:border-white/20"
+        "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-500 ease-out",
+        theme.bg,
+        showGlassEffect && `${theme.glass} lg:backdrop-blur-xl lg:shadow-lg lg:shadow-raisin/5 lg:border-b lg:border-white/20`
       )}
       style={{
         WebkitBackdropFilter: showGlassEffect ? "blur(20px) saturate(180%)" : "none",
@@ -78,12 +100,16 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="group relative font-montserrat text-sm font-medium uppercase tracking-wide text-raisin transition-colors duration-200 hover:text-violet"
+              className={cn(
+                "group relative font-montserrat text-sm font-medium uppercase tracking-wide transition-colors duration-200 hover:opacity-70",
+                theme.text
+              )}
             >
               {item.label}
               <span
                 className={cn(
-                  "absolute -bottom-1 left-0 h-0.5 bg-sunglow transition-all duration-300",
+                  "absolute -bottom-1 left-0 h-0.5 transition-all duration-300",
+                  theme.underline,
                   pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
                 )}
               />
@@ -92,7 +118,7 @@ export function Header() {
         </nav>
 
         {/* Logo - center */}
-        <Link href="/" className="text-violet">
+        <Link href="/" className={theme.logo}>
           <Logo className="w-32 h-auto sm:w-48" />
         </Link>
 
@@ -101,7 +127,7 @@ export function Header() {
           {navigation.slice(2).map((item) =>
             item.href === "/contact" ? (
               <Link key={item.href} href={item.href}>
-                <Button variant="outline" size="md">
+                <Button variant={pathname === "/contact" ? "light" : "outline"} size="md">
                   {item.label}
                 </Button>
               </Link>
@@ -109,12 +135,16 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative font-montserrat text-sm font-medium uppercase tracking-wide text-raisin transition-colors duration-200 hover:text-violet"
+                className={cn(
+                  "group relative font-montserrat text-sm font-medium uppercase tracking-wide transition-colors duration-200 hover:opacity-70",
+                  theme.text
+                )}
               >
                 {item.label}
                 <span
                   className={cn(
-                    "absolute -bottom-1 left-0 h-0.5 bg-sunglow transition-all duration-300",
+                    "absolute -bottom-1 left-0 h-0.5 transition-all duration-300",
+                    theme.underline,
                     pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
                   )}
                 />
@@ -130,6 +160,7 @@ export function Header() {
             socialItems={socialItems}
             displaySocials={true}
             displayItemNumbering={true}
+            buttonColor={theme.text}
           />
         </div>
       </div>

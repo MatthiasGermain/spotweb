@@ -8,10 +8,11 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   options: { value: string; label: string }[];
+  chevronColor?: string;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, id, options, ...props }, ref) => {
+  ({ className, label, error, id, options, chevronColor = "text-indigo", ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
@@ -39,7 +40,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-indigo" />
+          <ChevronDown className={cn("pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2", chevronColor)} />
         </div>
         {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
       </div>

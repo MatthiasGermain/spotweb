@@ -2,7 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -21,6 +21,7 @@ export interface StaggeredMenuProps {
   socialItems?: StaggeredMenuSocialItem[];
   displaySocials?: boolean;
   displayItemNumbering?: boolean;
+  buttonColor?: string;
   onMenuOpen?: () => void;
   onMenuClose?: () => void;
 }
@@ -30,6 +31,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
   socialItems = [],
   displaySocials = true,
   displayItemNumbering = true,
+  buttonColor = "text-violet",
   onMenuOpen,
   onMenuClose,
 }: StaggeredMenuProps) => {
@@ -383,7 +385,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
       {/* Toggle Button */}
       <button
         ref={toggleBtnRef}
-        className="relative z-70 inline-flex items-center gap-2 bg-transparent border-0 cursor-pointer font-montserrat font-medium text-violet transition-colors duration-200 hover:text-indigo"
+        className={`relative z-70 inline-flex items-center gap-2 bg-transparent border-0 cursor-pointer font-montserrat font-medium transition-colors duration-200 hover:opacity-70 ${buttonColor}`}
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
         aria-expanded={open}
         aria-controls="staggered-menu-panel"
