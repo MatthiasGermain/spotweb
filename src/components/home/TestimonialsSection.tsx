@@ -164,17 +164,31 @@ export function TestimonialsSection() {
   const currentTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="relative overflow-hidden bg-[#1e2952] py-12 sm:py-16 lg:py-20">
+    <section className="relative overflow-hidden bg-raisin py-12 sm:py-16 lg:py-20">
       {/* Decorative striped element - bottom right */}
-      <div className="pointer-events-none absolute -bottom-16 -right-16 sm:-bottom-12 sm:-right-12 lg:-bottom-8 lg:-right-8">
-        <Image
-          src="/images/decorations/zebra-striped round.svg"
-          alt=""
-          width={300}
-          height={300}
-          className="h-48 w-48 opacity-60 sm:h-56 sm:w-56 lg:h-64 lg:w-64"
-          aria-hidden="true"
-        />
+      <div className="pointer-events-none absolute -right-16 -bottom-16 sm:-right-12 sm:-bottom-12 lg:-right-8 lg:-bottom-8" aria-hidden="true">
+        <svg
+          viewBox="0 0 400 400"
+          className="h-64 w-64 sm:h-60 sm:w-60 lg:h-72 lg:w-72 opacity-100"
+        >
+          <defs>
+            <pattern
+              id="testimonial-stripes"
+              patternUnits="userSpaceOnUse"
+              width="600"
+              height="20"
+            >
+              <rect width="400" height="10" fill="#1c27300d" />
+              <rect y="10" width="400" height="10" fill="transparent" />
+            </pattern>
+          </defs>
+          <circle
+            cx="200"
+            cy="200"
+            r="190"
+            fill="url(#testimonial-stripes)"
+          />
+        </svg>
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -256,7 +270,7 @@ export function TestimonialsSection() {
         <div className="mt-10 flex justify-center sm:mt-12">
           <Link
             href="/contact"
-            className="inline-block rounded-full border-2 border-white bg-[#1e2952] px-6 py-2 font-montserrat text-sm font-medium text-white transition-colors duration-200 hover:bg-[#1e2952]/70 sm:px-8 sm:py-3 sm:text-base"
+            className="inline-block rounded-full border-2 border-white bg-raisin px-6 py-2 font-montserrat text-sm font-medium text-white transition-colors duration-200 hover:bg-[#1e2952]/70 sm:px-8 sm:py-3 sm:text-base"
           >
             Tu veux en faire parti?
           </Link>

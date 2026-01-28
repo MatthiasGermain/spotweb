@@ -134,6 +134,18 @@ export function TeamSection() {
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-cream py-10 sm:py-16 lg:py-20">
+      {/* Decorative striped circle - top right */}
+      <div className="absolute -right-16 -top-16 sm:-right-12 sm:-top-12 lg:-right-8 lg:-top-8">
+        <Image
+          src="/images/decorations/zebra-striped round.svg"
+          alt=""
+          width={1800}
+          height={1800}
+          className="h-64 w-64 sm:h-60 sm:w-60 lg:h-72 lg:w-72 opacity-100"
+          aria-hidden="true"
+        />
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title with violet underline */}
         <div className="mb-6 sm:mb-10 lg:mb-12">
