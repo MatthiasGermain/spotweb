@@ -10,7 +10,7 @@ export default function Contact() {
         <ContactHero />
         <ContactForm />
       </main>
-      <Newsletter />
+      <Newsletter theme="dark" />
       <Footer />
       <ScrollToTop />
     </div>

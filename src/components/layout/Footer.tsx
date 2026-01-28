@@ -10,7 +10,7 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-raisin text-white">
+    <footer className="bg-violet text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section principale : Logo, Email, Icônes */}
         <div className="flex flex-col items-center justify-between gap-6 py-8 sm:flex-row">

@@ -134,7 +134,7 @@ export function ContactForm() {
             />
 
             <div className="pt-4 text-center">
-              <Button type="submit" variant="primary" size="lg" className="px-16">
+              <Button type="submit" variant="primary" size="lg" className="px-16 text-white">
                 Envoyer
               </Button>
             </div>
