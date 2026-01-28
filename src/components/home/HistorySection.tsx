@@ -1,9 +1,11 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
+import { AnimatedUnderlineText } from "@/components/ui";
+import { useIntersectionTrigger } from "@/hooks";
+import { DELAY } from "@/constants";
 
 const teamPhotos = [
   {
@@ -45,10 +47,14 @@ const teamPhotos = [
 ];
 
 export function HistorySection() {
-  const collageRef = useRef(null);
-  const titleRef = useRef(null);
-  const isInView = useInView(collageRef, { once: true, margin: "-100px" });
-  const isTitleInView = useInView(titleRef, { once: true, margin: "-50px" });
+  const { ref: collageRef, isVisible: isInView } = useIntersectionTrigger<HTMLDivElement>({
+    threshold: 0.3,
+    rootMargin: "-100px",
+  });
+  const { ref: titleRef, isVisible: isTitleInView } = useIntersectionTrigger<HTMLDivElement>({
+    threshold: 0.3,
+    rootMargin: "-50px",
+  });
 
   return (
     <section className="relative bg-cream py-12 sm:py-16 lg:py-20 overflow-hidden">
@@ -69,30 +75,13 @@ export function HistorySection() {
           {/* Left side - Title and button */}
           <div ref={titleRef} className="mt-30 lg:mt-30 relative flex flex-col items-start lg:w-1/3">
             <h2 className="font-avenir font-black text-[#1e2952] text-5xl sm:text-7xl lg:text-8xl xl:text-[6rem]">
-              <span
-                style={{
-                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
-                  backgroundSize: isTitleInView ? "100% 0.35em" : "0% 0.35em",
-                  transition: "background-size 1s ease-out",
-                  boxDecorationBreak: "clone",
-                  WebkitBoxDecorationBreak: "clone",
-                }}
-              >
+              <AnimatedUnderlineText isVisible={isTitleInView}>
                 NOTRE
-              </span>
+              </AnimatedUnderlineText>
               <br />
-              <span
-                style={{
-                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
-                  backgroundSize: isTitleInView ? "100% 0.35em" : "0% 0.35em",
-                  transition: "background-size 1s ease-out",
-                  transitionDelay: "200ms",
-                  boxDecorationBreak: "clone",
-                  WebkitBoxDecorationBreak: "clone",
-                }}
-              >
+              <AnimatedUnderlineText isVisible={isTitleInView} delay={DELAY.medium}>
                 HISTOIRE
-              </span>
+              </AnimatedUnderlineText>
             </h2>
 
             <Link

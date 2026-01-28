@@ -1,28 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { AnimatedUnderlineText } from "@/components/ui";
+import { useIntersectionTrigger } from "@/hooks";
+import { DELAY } from "@/constants";
 
 export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const { ref: sectionRef, isVisible } = useIntersectionTrigger<HTMLElement>({
+    threshold: 0.3,
+  });
 
   return (
     <section
@@ -46,20 +32,14 @@ export function Hero() {
             <br />
             <span>
               <span className="text-violet font-normal">ce qui</span>{" "}
-              <span
+              <AnimatedUnderlineText
+                isVisible={isVisible}
+                delay={DELAY.medium}
                 className="text-[#1e2952]"
-                style={{
-                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
-                  backgroundSize: isVisible ? "100% 0.35em" : "0% 0.35em",
-                  transition: "background-size 1s ease-out",
-                  transitionDelay: "200ms",
-                  boxDecorationBreak: "clone",
-                  WebkitBoxDecorationBreak: "clone",
-                }}
               >
                 COMPTE{" "}
                 <span className="whitespace-nowrap">VRAIMENT{"\u00A0"}!</span>
-              </span>
+              </AnimatedUnderlineText>
             </span>
           </h1>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useInView } from "framer-motion";
-import { Button, Input, Textarea, Select } from "@/components/ui";
+import { useState } from "react";
+import { Button, Input, Textarea, Select, AnimatedUnderlineText } from "@/components/ui";
+import { useIntersectionTrigger } from "@/hooks";
 
 const interestOptions = [
   { value: "", label: "Sélectionnez une option" },
@@ -16,8 +16,10 @@ const interestOptions = [
 ];
 
 export function ContactForm() {
-  const titleRef = useRef(null);
-  const isTitleInView = useInView(titleRef, { once: true, margin: "-50px" });
+  const { ref: titleRef, isVisible: isTitleInView } = useIntersectionTrigger({
+    threshold: 0.3,
+    rootMargin: "-50px",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -74,17 +76,9 @@ export function ContactForm() {
           {/* Title with underline */}
           <div ref={titleRef} className="mb-10">
             <h2 className="inline-block text-3xl font-black text-raisin sm:text-4xl lg:text-5xl">
-              <span
-                style={{
-                  background: "linear-gradient(var(--color-sunglow), var(--color-sunglow)) no-repeat 0 90%",
-                  backgroundSize: isTitleInView ? "100% 0.35em" : "0% 0.35em",
-                  transition: "background-size 1s ease-out",
-                  boxDecorationBreak: "clone",
-                  WebkitBoxDecorationBreak: "clone",
-                }}
-              >
+              <AnimatedUnderlineText isVisible={isTitleInView}>
                 CONTACTEZ-NOUS
-              </span>
+              </AnimatedUnderlineText>
             </h2>
           </div>
 

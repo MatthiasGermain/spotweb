@@ -1,0 +1,1 @@
+export { useIntersectionTrigger } from "./useIntersectionTrigger";

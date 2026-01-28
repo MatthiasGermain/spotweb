@@ -1,12 +1,13 @@
 import { Link } from "next-view-transitions";
 import { Linkedin, Instagram } from "lucide-react";
 import { Logo } from "@/components/ui";
+import { NAVIGATION_ITEMS, SOCIAL_LINKS, CONTACT_EMAIL } from "@/constants";
 
-const footerLinks = [
-  { name: "accueil", href: "/" },
-  { name: "notre histoire", href: "/notre-histoire" },
-  { name: "services", href: "/services" },
-];
+// Filter out contact from navigation for footer links
+const footerLinks = NAVIGATION_ITEMS.filter(item => item.href !== "/contact").map(item => ({
+  name: item.label.toLowerCase(),
+  href: item.href
+}));
 
 export function Footer() {
   return (
@@ -21,16 +22,16 @@ export function Footer() {
 
           {/* Contact email */}
           <a
-            href="mailto:contact@spotlightcrea.com"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="text-base text-white transition-colors hover:text-indigo"
           >
-            contact@spotlightcrea.com
+            {CONTACT_EMAIL}
           </a>
 
           {/* Social links */}
           <div className="flex items-center gap-5">
             <a
-              href="https://www.linkedin.com/company/spotlightcrea"
+              href={SOCIAL_LINKS.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-white transition-colors hover:text-indigo"
@@ -39,7 +40,7 @@ export function Footer() {
               <Linkedin className="h-8 w-8" />
             </a>
             <a
-              href="https://www.instagram.com/spotlight.crea/"
+              href={SOCIAL_LINKS.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="text-white transition-colors hover:text-indigo"

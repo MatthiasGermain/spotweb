@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Spotlight - Site Web
 
-## Getting Started
+Site web officiel de l'association Spotlight, agence de communication dédiée à mettre en lumière les projets et actions qui comptent vraiment.
 
-First, run the development server:
+## Stack Technique
+
+- **Framework**: Next.js 16.1.4 (App Router)
+- **UI**: React 19.2, TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **Animations**: Framer Motion, GSAP
+- **Forms**: React Hook Form + Zod
+- **Icons**: Lucide React
+
+## Installation
 
 ```bash
+# Installation des dépendances
+npm install
+
+# Lancement du serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrir [http://localhost:3000](http://localhost:3000) pour voir le site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts Disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # Serveur de développement
+npm run build        # Build de production
+npm start            # Démarrage du serveur de production
+npm run lint         # Vérification ESLint
+npm run type-check   # Vérification TypeScript (sans compilation)
+npm run format       # Formatage du code avec Prettier
+npm run format:check # Vérification du formatage
+```
 
-## Learn More
+## Structure du Projet
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Pages Next.js (App Router)
+│   ├── page.tsx           # Page d'accueil
+│   ├── contact/           # Page contact
+│   ├── services/          # Page services
+│   └── notre-histoire/    # Page histoire
+├── components/
+│   ├── home/              # Composants page d'accueil
+│   ├── contact/           # Composants page contact
+│   ├── layout/            # Header, Footer, etc.
+│   └── ui/                # Composants UI réutilisables
+├── hooks/                 # Hooks React personnalisés
+├── constants/             # Constantes (navigation, couleurs, animations, etc.)
+├── types/                 # Types TypeScript
+└── styles/                # Styles globaux
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Accueil** (`/`) - Hero, services, équipe, témoignages
+- **Notre Histoire** (`/notre-histoire`) - Histoire de l'association et collage photos
+- **Services** (`/services`) - Détails des services proposés
+- **Contact** (`/contact`) - Formulaire de contact et informations
 
-## Deploy on Vercel
+## Composants Clés
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **AnimatedUnderlineText** - Soulignement animé au scroll
+- **useIntersectionTrigger** - Hook pour détecter la visibilité des éléments
+- **Logo** - Composant SVG du logo Spotlight
+- **StaggeredMenu** - Menu mobile avec animations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Déploiement
+
+Le site est déployé sur [Vercel](https://vercel.com). Les déploiements se font automatiquement à chaque push sur la branche `main`.
+
+```bash
+# Build local pour tester
+npm run build
+npm start
+```
+
+## Contact
+
+Pour toute question concernant le projet, contacter [contact@spotlightcrea.com](mailto:contact@spotlightcrea.com)
+
+---
+
+Développé avec Next.js et déployé sur Vercel

@@ -5,18 +5,10 @@ import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { Button, Logo, StaggeredMenu } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { NAVIGATION_ITEMS, SOCIAL_ITEMS } from "@/constants";
 
-const navigation = [
-  { label: "Accueil", href: "/" },
-  { label: "Notre histoire", href: "/notre-histoire" },
-  { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
-];
-
-const socialItems = [
-  { label: "Instagram", link: "https://www.instagram.com/spotlight.crea/" },
-  { label: "LinkedIn", link: "https://www.linkedin.com/company/spotlightcrea" },
-];
+const navigation = NAVIGATION_ITEMS;
+const socialItems = SOCIAL_ITEMS;
 
 // Theme config par page
 const pageThemes: Record<string, { bg: string; text: string; logo: string; glass: string; underline: string }> = {

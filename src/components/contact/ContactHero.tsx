@@ -1,27 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { AnimatedUnderlineText } from "@/components/ui";
+import { useIntersectionTrigger } from "@/hooks";
+import { CSS_COLORS } from "@/constants";
 
 export function ContactHero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const { ref: sectionRef, isVisible } = useIntersectionTrigger<HTMLElement>({
+    threshold: 0.3,
+  });
 
   return (
     <section
@@ -36,18 +22,13 @@ export function ContactHero() {
 
         {/* Main title */}
         <h1 className="mb-10 text-4xl font-black tracking-tight text-raisin sm:text-6xl lg:text-7xl">
-          <span
+          <AnimatedUnderlineText
+            isVisible={isVisible}
+            color={CSS_COLORS.white}
             className="inline px-2 sm:px-4"
-            style={{
-              background: "linear-gradient(var(--color-white), var(--color-white)) no-repeat 0 85%",
-              backgroundSize: isVisible ? "100% 0.35em" : "0% 0.35em",
-              transition: "background-size 0.8s ease-out",
-              boxDecorationBreak: "clone",
-              WebkitBoxDecorationBreak: "clone",
-            }}
           >
             METTRE EN LUMIÈRE
-          </span>
+          </AnimatedUnderlineText>
         </h1>
 
         {/* Description */}

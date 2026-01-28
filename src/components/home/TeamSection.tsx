@@ -1,54 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
-import { motion, LayoutGroup, useInView } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
+import { AnimatedUnderlineText } from "@/components/ui";
+import { useIntersectionTrigger } from "@/hooks";
+import { TEAM_MEMBERS, DELAY, CSS_COLORS } from "@/constants";
 
-const teamMembers = [
-  {
-    name: "Guillaume",
-    role: "Chargé de developpement",
-    image: "/images/team/guillaume.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
-    name: "Matthias",
-    role: "Développeur web",
-    image: "/images/team/matthias.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
-    name: "Faneva",
-    role: "Chargé de communication",
-    image: "/images/team/faneva.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
-    name: "Teddy",
-    role: "Vidéaste",
-    image: "/images/team/teddy.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
-    name: "Richa",
-    role: "Motion designer",
-    image: "/images/team/richa.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-  {
-    name: "Juliette",
-    role: "Graphiste",
-    image: "/images/team/juliette.jpg",
-    linkedin: "#",
-    instagram: "#",
-  },
-];
+const teamMembers = TEAM_MEMBERS;
 
 interface TeamMemberCardProps {
   member: (typeof teamMembers)[0];
@@ -114,8 +74,10 @@ function TeamMemberCard({ member, isExpanded, onToggle, isMobile }: TeamMemberCa
 export function TeamSection() {
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
-  const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const { ref: sectionRef, isVisible: isInView } = useIntersectionTrigger<HTMLElement>({
+    threshold: 0.3,
+    rootMargin: "-100px",
+  });
 
   useEffect(() => {
     if (isInView && !hasTriggered) {
@@ -150,30 +112,22 @@ export function TeamSection() {
         {/* Title with violet underline */}
         <div className="mb-6 sm:mb-10 lg:mb-12">
           <h2 className="font-montserrat text-2xl font-bold text-[#1e2952] sm:text-4xl lg:text-5xl">
-            <span
-              style={{
-                background: "linear-gradient(var(--color-violet), var(--color-violet)) no-repeat 0 90%",
-                backgroundSize: isInView ? "100% 0.25em" : "0% 0.25em",
-                transition: "background-size 1s ease-out",
-                boxDecorationBreak: "clone",
-                WebkitBoxDecorationBreak: "clone",
-              }}
+            <AnimatedUnderlineText
+              isVisible={isInView}
+              color={CSS_COLORS.violet}
+              thickness="0.25em"
             >
               UNE ÉQUIPE CRÉATIVE
-            </span>
+            </AnimatedUnderlineText>
             <br />
-            <span
-              style={{
-                background: "linear-gradient(var(--color-violet), var(--color-violet)) no-repeat 0 90%",
-                backgroundSize: isInView ? "100% 0.25em" : "0% 0.25em",
-                transition: "background-size 1s ease-out",
-                transitionDelay: "200ms",
-                boxDecorationBreak: "clone",
-                WebkitBoxDecorationBreak: "clone",
-              }}
+            <AnimatedUnderlineText
+              isVisible={isInView}
+              color={CSS_COLORS.violet}
+              thickness="0.25em"
+              delay={DELAY.medium}
             >
               ET CONNECTÉE
-            </span>
+            </AnimatedUnderlineText>
           </h2>
         </div>
 
