@@ -46,13 +46,13 @@ export function Hero() {
       </div>
 
       {/* Decorative flame/candle on the right */}
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-100 sm:right-24 lg:right-64 xl:right-80">
+      <div className="absolute top-1/2 -translate-y-1/4 sm:-translate-y-1/5 md:-translate-y-2/10 lg:-translate-y-3/10 -right-16 sm:-right-6 md:right-8 lg:right-12 xl:right-24 2xl:right-32">
         <Image
           src="/images/decorations/picto_candle.svg"
           alt=""
           width={352}
           height={448}
-          className="h-80 w-auto sm:h-[26rem] lg:h-[32rem]"
+          className="h-64 w-auto sm:h-80 md:h-96 lg:h-112 xl:h-128"
           aria-hidden="true"
         />
       </div>

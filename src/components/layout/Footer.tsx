@@ -14,9 +14,9 @@ export function Footer() {
     <footer className="bg-violet text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section principale : Logo, Email, Icônes */}
-        <div className="flex flex-col items-center justify-between gap-6 py-8 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-6 py-8 sm:flex-row sm:items-end">
           {/* Logo */}
-          <Link href="/" className="text-white">
+          <Link href="/" className="text-white translate-y-2">
             <Logo className="h-20 w-auto sm:h-24" />
           </Link>
 

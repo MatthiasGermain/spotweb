@@ -7,11 +7,12 @@ import { motion, LayoutGroup } from "framer-motion";
 import { AnimatedUnderlineText } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
 import { TEAM_MEMBERS, DELAY, CSS_COLORS } from "@/constants";
+import type { TeamMember } from "@/types";
 
 const teamMembers = TEAM_MEMBERS;
 
 interface TeamMemberCardProps {
-  member: (typeof teamMembers)[0];
+  member: TeamMember;
   isExpanded?: boolean;
   onToggle?: () => void;
   isMobile?: boolean;

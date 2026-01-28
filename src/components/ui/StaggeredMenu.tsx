@@ -17,8 +17,8 @@ export interface StaggeredMenuSocialItem {
 }
 
 export interface StaggeredMenuProps {
-  items?: StaggeredMenuItem[];
-  socialItems?: StaggeredMenuSocialItem[];
+  items?: readonly StaggeredMenuItem[];
+  socialItems?: readonly StaggeredMenuSocialItem[];
   displaySocials?: boolean;
   displayItemNumbering?: boolean;
   buttonColor?: string;

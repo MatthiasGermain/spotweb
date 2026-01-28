@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { useInView } from "framer-motion";
+import { Button } from "@/components/ui";
 
 const services = [
   "CONSEIL",
@@ -85,7 +86,7 @@ export function ServicesSection() {
                   <button
                     onClick={() => handleClick(service)}
                     className={`relative font-montserrat text-xl transition-all duration-300 hover:-translate-y-1 sm:text-2xl md:text-3xl lg:text-4xl ${
-                      isActive ? "translate-x-2 font-bold text-[#1e2952] sm:translate-x-4" : "font-light text-white"
+                      isActive ? "translate-x-2 font-bold text-raisin sm:translate-x-4" : "font-light text-white"
                     }`}
                   >
                     <span className="relative z-10">{service}</span>
@@ -149,11 +150,10 @@ export function ServicesSection() {
 
         {/* CTA Button */}
         <div className="flex justify-center">
-          <Link
-            href="/services"
-            className="inline-block rounded-full bg-white px-8 py-3 font-montserrat text-sm font-medium text-sunglow transition-colors duration-200 hover:bg-white/70 sm:px-10 sm:py-4 sm:text-base"
-          >
-            Mettre en lumière
+          <Link href="/services">
+            <Button colorScheme="white" size="lg">
+              Mettre en lumière
+            </Button>
           </Link>
         </div>
       </div>

@@ -37,8 +37,8 @@ export interface PageTheme {
 }
 
 // Component variant types
-export const BUTTON_VARIANTS = ["primary", "secondary", "outline", "light", "dark"] as const;
-export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
+export const BUTTON_COLOR_SCHEMES = ["sunglow", "violet", "raisin", "white"] as const;
+export type ButtonColorScheme = (typeof BUTTON_COLOR_SCHEMES)[number];
 
 export const BUTTON_SIZES = ["sm", "md", "lg"] as const;
 export type ButtonSize = (typeof BUTTON_SIZES)[number];

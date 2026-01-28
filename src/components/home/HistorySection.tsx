@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Link } from "next-view-transitions";
 import { motion } from "framer-motion";
-import { AnimatedUnderlineText } from "@/components/ui";
+import { AnimatedUnderlineText, Button } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
 import { DELAY } from "@/constants";
 
@@ -84,11 +84,10 @@ export function HistorySection() {
               </AnimatedUnderlineText>
             </h2>
 
-            <Link
-              href="/about"
-              className="mx-auto mt-6 inline-block rounded-full bg-violet px-6 py-2 font-montserrat text-sm text-white transition-colors duration-200 hover:bg-violet/70 sm:mt-8 sm:px-8 sm:py-3 sm:text-base"
-            >
-              en savoir plus...
+            <Link href="/notre-histoire" className="mx-auto mt-6 inline-block sm:mt-8">
+              <Button colorScheme="violet" size="md">
+                en savoir plus...
+              </Button>
             </Link>
           </div>
 

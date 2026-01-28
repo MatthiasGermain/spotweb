@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { Button } from "@/components/ui";
 
 interface ArrowButtonProps {
   direction: "left" | "right";
@@ -193,7 +194,7 @@ export function TestimonialsSection() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title */}
-        <h2 className="mb-8 font-avenir text-2xl font-bold text-sunglow sm:mb-12 sm:text-3xl lg:text-4xl">
+        <h2 className="mb-8 font-avenir text-2xl font-black text-sunglow sm:mb-12 sm:text-4xl lg:text-6xl">
           IL NOUS ONT FAIT CONFIANCE...
         </h2>
 
@@ -268,11 +269,10 @@ export function TestimonialsSection() {
 
         {/* CTA Button - centered */}
         <div className="mt-10 flex justify-center sm:mt-12">
-          <Link
-            href="/contact"
-            className="inline-block rounded-full border-2 border-white bg-raisin px-6 py-2 font-montserrat text-sm font-medium text-white transition-colors duration-200 hover:bg-[#1e2952]/70 sm:px-8 sm:py-3 sm:text-base"
-          >
-            Tu veux en faire parti?
+          <Link href="/contact">
+            <Button colorScheme="white" size="lg">
+              Tu veux en faire parti?
+            </Button>
           </Link>
         </div>
       </div>

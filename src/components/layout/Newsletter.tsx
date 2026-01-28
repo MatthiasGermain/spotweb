@@ -8,16 +8,24 @@ interface NewsletterProps {
 }
 
 export function Newsletter({ theme = "light" }: NewsletterProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implémenter l'inscription newsletter
-    console.log("Newsletter signup:", email);
+    console.log("Newsletter signup:", { firstName, lastName, email });
+    setFirstName("");
+    setLastName("");
     setEmail("");
   };
 
   const isDark = theme === "dark";
+
+  const inputClassName = `rounded-md border border-white/50 bg-white px-4 py-2 text-sm text-raisin placeholder:text-raisin/50 focus:outline-none focus:ring-1 ${
+    isDark ? "focus:border-violet focus:ring-violet" : "focus:border-indigo focus:ring-indigo"
+  }`;
 
   return (
     <section className={`relative py-6 overflow-hidden ${isDark ? "bg-raisin" : "bg-sunglow"}`}>
@@ -31,18 +39,32 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
             Inscris-toi à notre newsletter :
           </h3>
         </div>
-        <form onSubmit={handleSubmit} className="flex w-full max-w-md gap-2 sm:w-auto">
+        <form onSubmit={handleSubmit} className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
+          <input
+            type="text"
+            placeholder="Prénom"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            className={`${inputClassName} w-full sm:w-32`}
+          />
+          <input
+            type="text"
+            placeholder="Nom"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            className={`${inputClassName} w-full sm:w-32`}
+          />
           <input
             type="email"
-            placeholder="Email :"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className={`flex-1 rounded-md border border-white/50 bg-white px-4 py-2 text-sm text-raisin placeholder:text-raisin/50 focus:outline-none focus:ring-1 sm:w-64 ${
-              isDark ? "focus:border-violet focus:ring-violet" : "focus:border-indigo focus:ring-indigo"
-            }`}
+            className={`${inputClassName} w-full sm:w-54`}
           />
-          <Button type="submit" variant={isDark ? "secondary" : "dark"} size="sm">
+          <Button type="submit" colorScheme={isDark ? "white" : "raisin"} size="sm">
             Envoyer
           </Button>
         </form>
