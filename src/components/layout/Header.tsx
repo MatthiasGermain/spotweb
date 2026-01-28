@@ -61,7 +61,7 @@ export function Header() {
   const showCompactHeader = isScrolled && isDesktop;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 lg:px-0">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center lg:px-0">
       {/* Navbar container - continuous width animation */}
       <div
         className={cn(
