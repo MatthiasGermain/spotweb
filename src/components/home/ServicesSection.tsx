@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Link } from "next-view-transitions";
-import Image from "next/image";
 import { useInView } from "framer-motion";
 import { Button } from "@/components/ui";
 
@@ -20,17 +19,10 @@ const subServices: Record<string, string[]> = {
   CONSEIL: ["service 1", "service 2", "service 3", "service 4"],
   GRAPHISME: ["Identité visuelle", "Affiche", "Flyer", "Brochure"],
   "SITE WEB": ["service 1", "service 2", "service 3", "service 4"],
-  VIDÉO: ["service 1", "service 2", "service 3", "service 4"],
-  "MOTION DESIGN": ["service 1", "service 2", "service 3", "service 4"],
+  VIDÉO: ["Vidéos promotionnelles", "Récaps d'évenement", "Clips", "Shorts/formats verticaux"],
+  "MOTION DESIGN": ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo", "service 4"],
   COMMUNITY: ["service 1", "service 2", "service 3", "service 4"],
   CROSSFUNDING: ["service 1", "service 2", "service 3", "service 4"],
-};
-
-const serviceImages: Record<string, string> = {
-  CONSEIL: "/images/decorations/light_bulb.png",
-  GRAPHISME: "/images/decorations/hand_with_pen.png",
-  "SITE WEB": "/images/decorations/computer.png",
-  VIDÉO: "/images/decorations/camera.png",
 };
 
 export function ServicesSection() {
@@ -56,22 +48,9 @@ export function ServicesSection() {
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-sunglow py-12 sm:py-16 lg:py-20">
-      {/* Service illustration - bottom right, overflowing */}
-      {activeService && serviceImages[activeService] && (
-        <div className="pointer-events-none absolute -bottom-32 right-0 hidden sm:block md:-bottom-40 md:right-8 lg:-bottom-48 lg:right-16">
-          <Image
-            src={serviceImages[activeService]}
-            alt=""
-            width={1000}
-            height={1000}
-            className="h-96 w-auto opacity-50 md:h-128 lg:h-160 xl:h-192"
-            aria-hidden="true"
-          />
-        </div>
-      )}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title - top right */}
-        <h2 className="mb-8 text-right font-montserrat text-4xl font-semibold text-white sm:mb-12 sm:text-5xl lg:text-6xl xl:text-7xl">
+        <h2 className="mb-8 text-right font-montserrat text-4xl font-black text-white sm:mb-12 sm:text-5xl lg:text-6xl xl:text-7xl">
           NOS SERVICES
         </h2>
 

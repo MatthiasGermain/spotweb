@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { Button, Logo, StaggeredMenu } from "@/components/ui";
@@ -33,7 +33,8 @@ export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [viewportWidth, setViewportWidth] = useState(1920);
+  const [contentWidth, setContentWidth] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const theme = pageThemes[pathname] || defaultTheme;
 
@@ -44,7 +45,9 @@ export function Header() {
 
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1024);
-      setViewportWidth(window.innerWidth);
+      if (contentRef.current) {
+        setContentWidth(contentRef.current.scrollWidth);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -61,58 +64,66 @@ export function Header() {
   const showCompactHeader = isScrolled && isDesktop;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center lg:px-0">
-      {/* Navbar container - continuous width animation */}
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center lg:mx-8 xl:mx-0">
+      {/* Navbar wrapper - full width for positioning */}
       <div
-        className={cn(
-          theme.bg,
-          // Rounded corners when compact
-          showCompactHeader && [
-            "lg:rounded-full",
-            "lg:border lg:border-white/20",
-            theme.glass,
-          ]
-        )}
+        className="relative w-full"
         style={{
-          // Continuous width animation - using fixed pixel values for smooth CSS interpolation
-          width: isDesktop ? (showCompactHeader ? "750px" : `${viewportWidth}px`) : "100%",
-          marginTop: isDesktop && showCompactHeader ? "12px" : "0px",
-          WebkitBackdropFilter: showCompactHeader ? "blur(20px) saturate(180%)" : undefined,
-          backdropFilter: showCompactHeader ? "blur(20px) saturate(180%)" : undefined,
-          boxShadow: showCompactHeader ? "0 10px 40px -10px rgba(30, 41, 82, 0.15)" : "none",
-          transition: "width 600ms cubic-bezier(0.4, 0, 0.2, 1), margin-top 600ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 400ms ease-out, box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms ease-out",
+          marginTop: isDesktop && showCompactHeader ? "8px" : "0px",
+          transition: "margin-top 600ms cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
-        {/* Glass reflection effect */}
+        {/* Visual background - smaller width when compact, centered */}
         <div
           className={cn(
-            "absolute inset-0 pointer-events-none rounded-full overflow-hidden",
-            "hidden lg:block"
+            "absolute left-1/2 -translate-x-1/2 h-full",
+            theme.bg,
+            showCompactHeader && [
+              "lg:rounded-xl",
+              "lg:border lg:border-white/20",
+              theme.glass,
+            ]
           )}
           style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)",
-            opacity: showCompactHeader ? 1 : 0,
-            transition: "opacity 500ms ease-out",
+            width: isDesktop ? (showCompactHeader && contentWidth ? `${contentWidth}px` : "100%") : "100%",
+            WebkitBackdropFilter: showCompactHeader ? "blur(20px) saturate(180%)" : undefined,
+            backdropFilter: showCompactHeader ? "blur(20px) saturate(180%)" : undefined,
+            boxShadow: showCompactHeader ? "0 10px 40px -10px rgba(30, 41, 82, 0.15)" : "none",
+            transition: "width 600ms cubic-bezier(0.4, 0, 0.2, 1), border-radius 400ms ease-out, box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms ease-out",
           }}
-        />
+        >
+          {/* Glass reflection effect */}
+          <div
+            className={cn(
+              "absolute inset-0 pointer-events-none rounded-xl overflow-hidden",
+              "hidden lg:block"
+            )}
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)",
+              opacity: showCompactHeader ? 1 : 0,
+              transition: "opacity 500ms ease-out",
+            }}
+          />
+        </div>
 
+        {/* Content - maintains same position */}
         <div
-          className="relative flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8 mx-auto w-full"
+          ref={contentRef}
+          className="relative flex items-center justify-between px-4 py-2 sm:px-8 md:px-8 lg:px-8 xl:px-8 mx-auto w-full"
           style={{
-            // Animate gap between elements and max-width
-            maxWidth: showCompactHeader ? "750px" : "1280px",
-            gap: isDesktop ? (showCompactHeader ? "16px" : "32px") : undefined,
+            maxWidth: showCompactHeader ? "1240px" : "1280px",
+            gap: isDesktop ? (showCompactHeader ? "28px" : "32px") : undefined,
             transition: "max-width 600ms cubic-bezier(0.4, 0, 0.2, 1), gap 600ms cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          {/* Mobile spacer - left */}
-          <div className="w-10 lg:hidden" />
+          {/* Mobile spacer - left (matches menu width for centering) */}
+          <div className="flex-1 lg:hidden lg:flex-none" />
 
           {/* Desktop navbar - left side */}
           <nav
             className="hidden lg:flex lg:items-center"
             style={{
-              gap: showCompactHeader ? "12px" : "32px",
+              gap: showCompactHeader ? "28px" : "32px",
               transition: "gap 600ms cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
@@ -125,8 +136,8 @@ export function Header() {
                   theme.text
                 )}
                 style={{
-                  fontSize: showCompactHeader ? "12px" : "14px",
-                  letterSpacing: showCompactHeader ? "0.025em" : "0.05em",
+                  fontSize: showCompactHeader ? "13px" : "14px",
+                  letterSpacing: showCompactHeader ? "0.04em" : "0.05em",
                   transition: "font-size 600ms cubic-bezier(0.4, 0, 0.2, 1), letter-spacing 600ms cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
@@ -187,16 +198,16 @@ export function Header() {
           <nav
             className="hidden lg:flex lg:items-center"
             style={{
-              gap: showCompactHeader ? "12px" : "32px",
+              gap: showCompactHeader ? "28px" : "32px",
               transition: "gap 600ms cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
             {navigation.slice(2).map((item) =>
-              item.href === "/contact" ? (
+              item.href === "/contact" && pathname !== "/contact" ? (
                 <Link key={item.href} href={item.href}>
                   <Button
                     colorScheme="violet"
-                    size={showCompactHeader ? "sm" : "md"}
+                    size="md"
                     className="whitespace-nowrap transition-all duration-500"
                   >
                     {item.label}
@@ -211,8 +222,8 @@ export function Header() {
                     theme.text
                   )}
                   style={{
-                    fontSize: showCompactHeader ? "12px" : "14px",
-                    letterSpacing: showCompactHeader ? "0.025em" : "0.05em",
+                    fontSize: showCompactHeader ? "13px" : "14px",
+                    letterSpacing: showCompactHeader ? "0.04em" : "0.05em",
                     transition: "font-size 600ms cubic-bezier(0.4, 0, 0.2, 1), letter-spacing 600ms cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
                 >
@@ -230,7 +241,7 @@ export function Header() {
           </nav>
 
           {/* Mobile menu button - right */}
-          <div className="lg:hidden">
+          <div className="flex-1 flex justify-end lg:hidden lg:flex-none">
             <StaggeredMenu
               items={navigation}
               socialItems={socialItems}

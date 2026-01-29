@@ -244,7 +244,7 @@ export function TestimonialsSection() {
                 <div className="flex flex-col items-center justify-center text-center sm:w-[65%] sm:items-start sm:text-left">
                   {/* Name with underline */}
                   <div className="mb-1">
-                    <h3 className="font-avenir text-2xl font-bold uppercase text-white sm:text-3xl lg:text-4xl">
+                    <h3 className="font-avenir text-2xl font-black uppercase text-white sm:text-3xl lg:text-4xl">
                       {currentTestimonial.name}
                     </h3>
                   </div>

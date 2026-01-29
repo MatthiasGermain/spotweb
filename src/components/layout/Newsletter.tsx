@@ -35,7 +35,7 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
           <span className={`text-6xl font-light ${isDark ? "text-violet" : "text-white"} leading-none -translate-y-1/3 translate-x-2 sm:text-7xl sm:translate-x-2 lg:translate-x-4`}>
             +
           </span>
-          <h3 className={`text-base font-bold uppercase tracking-wide sm:text-lg lg:text-3xl pt-2 sm:pt-4 ${isDark ? "text-white" : "text-raisin"}`}>
+          <h3 className={`text-base font-black uppercase tracking-wide sm:text-lg lg:text-2xl pt-2 sm:pt-5 ${isDark ? "text-white" : "text-raisin"}`}>
             Inscris-toi à notre newsletter :
           </h3>
         </div>
@@ -46,7 +46,7 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             required
-            className={`${inputClassName} w-full sm:w-32`}
+            className={`${inputClassName} w-full sm:w-34`}
           />
           <input
             type="text"
@@ -54,7 +54,7 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             required
-            className={`${inputClassName} w-full sm:w-32`}
+            className={`${inputClassName} w-full sm:w-34`}
           />
           <input
             type="email"
@@ -62,7 +62,7 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className={`${inputClassName} w-full sm:w-54`}
+            className={`${inputClassName} w-full sm:w-72`}
           />
           <Button type="submit" colorScheme={isDark ? "white" : "raisin"} size="sm">
             Envoyer

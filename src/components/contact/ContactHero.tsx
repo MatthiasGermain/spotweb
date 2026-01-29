@@ -16,7 +16,7 @@ export function ContactHero() {
     >
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
         {/* Subtitle */}
-        <p className="mb-6 sm:text-3xl lg:text-4xl font-semibold uppercase tracking-widest text-white">
+        <p className="mb-16 sm:text-xl lg:text-2xl font-semibold uppercase tracking-widest text-white">
           Contact
         </p>
 

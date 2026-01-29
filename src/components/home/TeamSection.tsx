@@ -112,7 +112,7 @@ export function TeamSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Title with violet underline */}
         <div className="mb-6 sm:mb-10 lg:mb-12">
-          <h2 className="font-montserrat text-2xl font-bold text-[#1e2952] sm:text-4xl lg:text-5xl">
+          <h2 className="font-montserrat text-2xl font-black text-raisin sm:text-4xl lg:text-5xl">
             <AnimatedUnderlineText
               isVisible={isInView}
               color={CSS_COLORS.violet}
