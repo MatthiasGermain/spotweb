@@ -15,7 +15,7 @@ export function BeliefBanner() {
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
         {/* Mobile: colonne centrée */}
         <div className="flex flex-col items-center text-center font-montserrat text-lg sm:text-2xl md:hidden">
-          <span className="text-violet mb-2">Nous croyons</span>
+          <span className="text-violet font-light mb-2">Nous croyons</span>
           <div className="h-[5em] overflow-hidden">
             <RotatingText
               texts={beliefs}
@@ -32,21 +32,21 @@ export function BeliefBanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "-120%", opacity: 0 }}
               mainClassName="w-full justify-center"
-              elementLevelClassName="font-bold text-sunglow"
+              elementLevelClassName="font-bold text-sunglow uppercase"
             />
           </div>
         </div>
 
         {/* Desktop: ligne avec "Nous croyons" à gauche */}
         <div className="hidden md:flex md:items-start md:gap-4 font-montserrat text-2xl lg:text-3xl xl:text-4xl">
-          <span className="text-violet shrink-0">Nous croyons</span>
+          <span className="text-violet font-light shrink-0">Nous croyons</span>
           <div className="h-[3.5em] lg:h-[3em] overflow-hidden flex-1">
             <RotatingText
               texts={beliefs}
               splitBy="words"
               staggerDuration={0.025}
               staggerFrom="first"
-              rotationInterval={8000}
+              rotationInterval={5000}
               transition={{
                 type: "spring",
                 damping: 25,
@@ -56,7 +56,7 @@ export function BeliefBanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "-120%", opacity: 0 }}
               mainClassName="w-full"
-              elementLevelClassName="font-bold text-sunglow"
+              elementLevelClassName="font-bold text-sunglow uppercase"
             />
           </div>
         </div>

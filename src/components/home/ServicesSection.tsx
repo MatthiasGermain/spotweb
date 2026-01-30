@@ -11,7 +11,7 @@ const services = [
   "SITE WEB",
   "VIDÉO",
   "MOTION DESIGN",
-  "COMMUNITY",
+  "RÉSEAUX SOCIAUX",
   "CROSSFUNDING",
 ];
 
@@ -21,7 +21,7 @@ const subServices: Record<string, string[]> = {
   "SITE WEB": ["service 1", "service 2", "service 3", "service 4"],
   VIDÉO: ["Vidéos promotionnelles", "Récaps d'évenement", "Clips", "Shorts/formats verticaux"],
   "MOTION DESIGN": ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo", "service 4"],
-  COMMUNITY: ["service 1", "service 2", "service 3", "service 4"],
+  "RÉSEAUX SOCIAUX": ["service 1", "service 2", "service 3", "service 4"],
   CROSSFUNDING: ["service 1", "service 2", "service 3", "service 4"],
 };
 

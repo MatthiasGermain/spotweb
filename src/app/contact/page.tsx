@@ -4,7 +4,7 @@ import { ContactHero, ContactForm } from "@/components/contact";
 
 export default function Contact() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-sunglow">
       <Header />
       <main className="flex-1 pt-16 sm:pt-18">
         <ContactHero />

@@ -32,7 +32,7 @@ function TeamMemberCard({ member, isExpanded, onToggle, isMobile }: TeamMemberCa
       />
       {/* Mobile: tap to reveal info */}
       {isMobile && isExpanded && (
-        <div className="absolute inset-x-0 bottom-0 bg-[#628f93] p-4 animate-slide-up">
+        <div className="absolute inset-x-0 bottom-0 bg-[#628f93]/90 p-4 animate-slide-up">
           <p className="font-avenir text-lg font-bold text-white">{member.name}</p>
           <p className="font-montserrat text-sm font-medium text-white">{member.role}</p>
           <div className="mt-2 flex gap-3">
