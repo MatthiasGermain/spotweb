@@ -10,6 +10,7 @@
   --color-isabelline: #EEE7E8;
   --color-cream: #f4f0ec;
   --color-white: #FFFFFF;
+  --color-cyan: #628f93;
 
   /* Fonts - using CSS variables from Next.js localFont */
   --font-avenir: var(--font-avenir), system-ui, sans-serif;

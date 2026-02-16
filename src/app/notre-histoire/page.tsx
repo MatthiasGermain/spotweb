@@ -1,6 +1,14 @@
 import { Header, Footer, Newsletter } from "@/components/layout";
 import { ScrollToTop } from "@/components/ui";
-import { HistoireHero, FriendsCarousel } from "@/components/histoire";
+import {
+  HistoireHero,
+  FriendsCarousel,
+  ImagineScene,
+  OriginsCards,
+  BirthSection,
+  ManifestoSection,
+  CtaSection,
+} from "@/components/histoire";
 
 export default function NotreHistoire() {
   return (
@@ -9,6 +17,11 @@ export default function NotreHistoire() {
       <main className="flex-1 pt-16 sm:pt-18">
         <HistoireHero />
         <FriendsCarousel />
+        <ImagineScene />
+        <OriginsCards />
+        <BirthSection />
+        <ManifestoSection />
+        <CtaSection />
       </main>
       <Newsletter />
       <Footer />
