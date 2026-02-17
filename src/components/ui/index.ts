@@ -7,4 +7,4 @@ export { StaggeredMenu } from "./StaggeredMenu";
 export { ScrollToTop } from "./ScrollToTop";
 export { AnimatedUnderlineText } from "./AnimatedUnderlineText";
 export { RotatingText } from "./RotatingText";
-export { ScrollReveal } from "./ScrollReveal";
+export { TeamCollage } from "./TeamCollage";

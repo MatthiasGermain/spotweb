@@ -14,8 +14,6 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "clsx": "^2.1.1",
-    "embla-carousel-auto-scroll": "^8.6.0",
-    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.34.0",
     "gsap": "^3.14.2",
     "lucide-react": "^0.562.0",
@@ -23,9 +21,7 @@
     "next-view-transitions": "^0.3.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-hook-form": "^7.71.1",
-    "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.5"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",

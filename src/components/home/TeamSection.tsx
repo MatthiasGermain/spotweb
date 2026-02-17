@@ -76,8 +76,8 @@ export function TeamSection() {
   const [expandedMember, setExpandedMember] = useState<string | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
   const { ref: sectionRef, isVisible: isInView } = useIntersectionTrigger<HTMLElement>({
-    threshold: 0.3,
-    rootMargin: "-100px",
+    threshold: 0.15,
+    rootMargin: "-50px",
   });
 
   useEffect(() => {
