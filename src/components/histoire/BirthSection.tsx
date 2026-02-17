@@ -81,45 +81,43 @@ export function BirthSection() {
         {/* Carte arrondie */}
         <div className="relative rounded-3xl bg-cream-dark/20 p-8 sm:p-10 lg:p-12">
           {/* Version mobile (empilée) */}
-          <div className="flex flex-col gap-6 sm:hidden">
-            <div className="flex gap-4 items-start">
-              <div className="w-32 shrink-0 overflow-hidden rounded-2xl">
+          <div className="flex flex-col gap-5 sm:hidden">
+            <p className="font-avenir font-black text-violet text-xl leading-snug text-center">
+              Alors, on a embarqué deux autres potes dans l&apos;aventure et
+              c&apos;est comme ça qu&apos;est né...
+            </p>
+            <div className="flex justify-center gap-3">
+              <div className="w-1/2 overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/bereal.jpeg"
+                  src="/images/birth_1.png"
                   alt="L'équipe Spotlight en selfie"
                   width={600}
                   height={900}
                   className="w-full h-auto object-cover"
                 />
               </div>
-              <p className="font-avenir font-black text-violet text-lg leading-snug">
-                Alors, on a embarqué deux autres potes dans l&apos;aventure et
-                c&apos;est comme ça qu&apos;est né...
-              </p>
-            </div>
-            <div className="flex gap-4 items-end">
-              <div className="w-36 shrink-0 overflow-hidden rounded-2xl">
+              <div className="w-1/2 overflow-hidden rounded-2xl">
                 <Image
-                  src="/images/bereal.jpeg"
+                  src="/images/birth_2.png"
                   alt="L'équipe Spotlight au travail"
                   width={600}
                   height={900}
                   className="w-full h-auto object-cover"
                 />
               </div>
-              <Image
-                src="/images/logo_noir_sans_fond.svg"
-                alt="Spotlight"
-                width={900}
-                height={450}
-                className="w-full h-auto"
-                style={{
-                  filter:
-                    "brightness(0) saturate(100%) invert(68%) sepia(18%) saturate(1059%) hue-rotate(237deg) brightness(96%) contrast(87%)",
-                  opacity: 0.85,
-                }}
-              />
             </div>
+            <Image
+              src="/images/logo_noir_sans_fond.svg"
+              alt="Spotlight"
+              width={900}
+              height={450}
+              className="mx-auto w-3/5 h-auto"
+              style={{
+                filter:
+                  "brightness(0) saturate(100%) invert(68%) sepia(18%) saturate(1059%) hue-rotate(237deg) brightness(96%) contrast(87%)",
+                opacity: 0.85,
+              }}
+            />
           </div>
 
           {/* Version desktop (positionnement libre) */}
@@ -127,7 +125,7 @@ export function BirthSection() {
             {/* Photo 1 - haut gauche */}
             <div className="relative z-10 w-36 lg:w-44 overflow-hidden rounded-2xl">
               <Image
-                src="/images/bereal.jpeg"
+                src="/images/birth_1.png"
                 alt="L'équipe Spotlight en selfie"
                 width={600}
                 height={900}
@@ -177,7 +175,7 @@ export function BirthSection() {
             {/* Photo 2 - centre */}
             <div className="absolute left-[22%] -bottom-6 z-10 w-40 lg:w-48 overflow-hidden rounded-2xl">
               <Image
-                src="/images/bereal.jpeg"
+                src="/images/birth_2.png"
                 alt="L'équipe Spotlight au travail"
                 width={600}
                 height={900}

@@ -23,7 +23,7 @@ export function ImagineScene() {
             <div className="overflow-hidden rounded-2xl">
               {/* TODO: Remplacer par l'image définitive */}
               <Image
-                src="/images/team/fun4.jpg"
+                src="/images/imagine_photo.png"
                 alt="L'équipe Spotlight autour d'une table"
                 width={900}
                 height={900}
