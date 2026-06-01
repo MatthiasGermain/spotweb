@@ -33,10 +33,8 @@ export function ContactHero() {
 
         {/* Description */}
         <p className="mx-auto max-w-3xl text-base leading-relaxed text-white sm:text-lg">
-          Spotlight vous accompagne pour mettre en lumière vos projets et vos actions.
-          Nous croyons qu&apos;une communication juste et inspirée peut servir votre vision et porter votre impact.
-          Partagez avec nous vos besoins, vos objectifs et vos échéances : ensemble, nous construirons une stratégie alignée avec vos valeurs
-          pour donner à votre message clarté, portée et sens.
+          Votre message a quelque chose à dire. Dites-le-nous, on se charge de l&apos;éclairer, de
+          l&apos;amplifier, de le faire rayonner.
         </p>
       </div>
     </section>

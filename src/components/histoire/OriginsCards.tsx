@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { AnimatedUnderlineText } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
 
-const flipSpring = { type: "spring" as const, stiffness: 80, damping: 14 };
+const slideSpring = { type: "spring" as const, stiffness: 100, damping: 20 };
 
 export function OriginsCards() {
   const { ref, isVisible } = useIntersectionTrigger({ threshold: 0.3 });
@@ -14,15 +14,13 @@ export function OriginsCards() {
       <div className="mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
         <div
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 lg:gap-12"
-          style={{ perspective: 1000 }}
         >
           {/* Card Premièrement */}
           <motion.div
             className="h-full"
-            initial={{ rotateY: 90, opacity: 0 }}
-            animate={isVisible ? { rotateY: 0, opacity: 1 } : {}}
-            transition={flipSpring}
-            style={{ transformOrigin: "left center" }}
+            initial={{ y: 60, opacity: 0 }}
+            animate={isVisible ? { y: 0, opacity: 1 } : {}}
+            transition={slideSpring}
           >
             <div className="h-full rounded-3xl bg-cream p-8 sm:p-10 lg:p-12">
               <h3 className="font-avenir font-black text-cyan text-3xl sm:text-4xl lg:text-5xl tracking-wide uppercase mb-6">
@@ -49,10 +47,9 @@ export function OriginsCards() {
           {/* Card Deuxièmement */}
           <motion.div
             className="h-full"
-            initial={{ rotateY: 90, opacity: 0 }}
-            animate={isVisible ? { rotateY: 0, opacity: 1 } : {}}
-            transition={{ ...flipSpring, delay: 0.2 }}
-            style={{ transformOrigin: "left center" }}
+            initial={{ y: 60, opacity: 0 }}
+            animate={isVisible ? { y: 0, opacity: 1 } : {}}
+            transition={{ ...slideSpring, delay: 0.15 }}
           >
             <div className="h-full rounded-3xl bg-cream p-8 sm:p-10 lg:p-12">
               <h3 className="font-avenir font-black text-cyan text-3xl sm:text-4xl lg:text-5xl tracking-wide uppercase mb-6">

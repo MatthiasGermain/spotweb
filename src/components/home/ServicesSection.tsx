@@ -2,59 +2,160 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Link } from "next-view-transitions";
-import { useInView } from "framer-motion";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Button } from "@/components/ui";
 
 const services = [
-  "CONSEIL",
+  "STRATÉGIE",
   "GRAPHISME",
   "SITE WEB",
   "VIDÉO",
   "MOTION DESIGN",
   "RÉSEAUX SOCIAUX",
-  "CROSSFUNDING",
 ];
 
 const subServices: Record<string, string[]> = {
-  CONSEIL: ["service 1", "service 2", "service 3", "service 4"],
-  GRAPHISME: ["Identité visuelle", "Affiche", "Flyer", "Brochure"],
-  "SITE WEB": ["service 1", "service 2", "service 3", "service 4"],
-  VIDÉO: ["Vidéos promotionnelles", "Récaps d'évenement", "Clips", "Shorts/formats verticaux"],
-  "MOTION DESIGN": ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo", "service 4"],
-  "RÉSEAUX SOCIAUX": ["service 1", "service 2", "service 3", "service 4"],
-  CROSSFUNDING: ["service 1", "service 2", "service 3", "service 4"],
+  STRATÉGIE: [
+    "Campagne de communication",
+    "Accompagnement personnalisé",
+    "Plan de communication 360°",
+    "Crowdfunding",
+  ],
+  GRAPHISME: ["Identité visuelle", "Affiche", "Flyer", "Brochure", "Livret", "Kakémono"],
+  "SITE WEB": ["Création", "Maintenance", "Gestion de contenu", "Visibilité"],
+  VIDÉO: ["Vidéos promotionnelles", "Récaps d'événement", "Shorts/formats verticaux", "Clips"],
+  "MOTION DESIGN": ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo"],
+  "RÉSEAUX SOCIAUX": [
+    "Création de contenu engageant",
+    "Planning éditorial",
+    "Formation",
+    "Community management",
+  ],
+};
+
+const GLOW_COLOR = "98, 143, 147";
+
+/* ── Bento layout ── */
+const getBentoConfig = (count: number): { cols: number; spans: (number | undefined)[] } => {
+  if (count === 6) {
+    return { cols: 3, spans: [2, undefined, undefined, undefined, undefined, 3] };
+  }
+  if (count % 2 !== 0) {
+    return { cols: 2, spans: [2, ...Array(count - 1).fill(undefined)] };
+  }
+  return { cols: 2, spans: Array(count).fill(undefined) };
 };
 
 export function ServicesSection() {
   const [activeService, setActiveService] = useState<string | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
   const sectionRef = useRef(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   useEffect(() => {
     if (isInView && !hasTriggered) {
-      // Petit délai pour que l'animation soit visible
       const timer = setTimeout(() => {
-        setActiveService("CONSEIL");
+        setActiveService("STRATÉGIE");
         setHasTriggered(true);
       }, 300);
       return () => clearTimeout(timer);
     }
   }, [isInView, hasTriggered]);
 
+  // Border glow — track mouse across all cards
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const cards = grid.querySelectorAll(".service-card");
+      cards.forEach((card) => {
+        const el = card as HTMLElement;
+        const rect = el.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        // Distance from card center
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dist =
+          Math.hypot(e.clientX - centerX, e.clientY - centerY) -
+          Math.max(rect.width, rect.height) / 2;
+        const effective = Math.max(0, dist);
+
+        let intensity = 0;
+        if (effective <= 0) intensity = 1;
+        else if (effective <= 150) intensity = 1 - effective / 150;
+
+        el.style.setProperty("--glow-x", `${x}%`);
+        el.style.setProperty("--glow-y", `${y}%`);
+        el.style.setProperty("--glow-intensity", intensity.toString());
+      });
+    };
+
+    const handleMouseLeave = () => {
+      const cards = grid.querySelectorAll(".service-card");
+      cards.forEach((card) => {
+        (card as HTMLElement).style.setProperty("--glow-intensity", "0");
+      });
+    };
+
+    grid.addEventListener("mousemove", handleMouseMove);
+    grid.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      grid.removeEventListener("mousemove", handleMouseMove);
+      grid.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [activeService]);
+
   const handleClick = (service: string) => {
     setActiveService(activeService === service ? null : service);
   };
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-sunglow py-12 sm:py-16 lg:py-20">
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden bg-sunglow py-12 sm:py-16 lg:py-20"
+    >
+      <style>{`
+        .service-card {
+          --glow-x: 50%;
+          --glow-y: 50%;
+          --glow-intensity: 0;
+        }
+
+        .service-card::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          padding: 4px;
+          background: radial-gradient(
+            250px circle at var(--glow-x) var(--glow-y),
+            rgba(${GLOW_COLOR}, calc(var(--glow-intensity) * 0.7)) 0%,
+            rgba(${GLOW_COLOR}, calc(var(--glow-intensity) * 0.3)) 30%,
+            transparent 60%
+          );
+          border-radius: inherit;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+          pointer-events: none;
+          transition: opacity 0.3s ease;
+          z-index: 1;
+        }
+
+        .service-card:hover {
+          box-shadow: 0 4px 20px rgba(${GLOW_COLOR}, 0.15), 0 0 20px rgba(${GLOW_COLOR}, 0.08);
+        }
+      `}</style>
+
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Title - top right */}
         <h2 className="mb-8 text-right font-montserrat text-4xl font-black text-white sm:mb-12 sm:text-5xl lg:text-6xl xl:text-7xl">
           NOS SERVICES
         </h2>
 
-        {/* Content - Services list + Sub-services */}
         <div className="relative mb-8 flex flex-col gap-8 sm:mb-12 sm:flex-row sm:justify-between">
           {/* Services list */}
           <ul className="space-y-1 sm:space-y-4 lg:space-y-6">
@@ -65,7 +166,9 @@ export function ServicesSection() {
                   <button
                     onClick={() => handleClick(service)}
                     className={`relative font-montserrat text-xl transition-all duration-300 hover:-translate-y-1 sm:text-2xl md:text-3xl lg:text-4xl ${
-                      isActive ? "translate-x-2 font-bold text-raisin sm:translate-x-4" : "font-light text-white"
+                      isActive
+                        ? "translate-x-2 font-bold text-raisin sm:translate-x-4"
+                        : "font-light text-white"
                     }`}
                   >
                     <span className="relative z-10">{service}</span>
@@ -73,7 +176,10 @@ export function ServicesSection() {
                       className={`absolute bottom-0 left-0 h-1.5 bg-white transition-all duration-300 sm:h-2 md:h-3 lg:h-4 ${
                         isActive ? "w-full opacity-100" : "w-0 opacity-0"
                       }`}
-                      style={{ marginLeft: "0.5rem", width: isActive ? "calc(100% + 0.5rem)" : "0" }}
+                      style={{
+                        marginLeft: "0.5rem",
+                        width: isActive ? "calc(100% + 0.5rem)" : "0",
+                      }}
                     />
                   </button>
                 </li>
@@ -81,49 +187,97 @@ export function ServicesSection() {
             })}
           </ul>
 
-          {/* Sub-services grid - Desktop */}
+          {/* Sub-services bento grid — Desktop */}
           <div className="hidden sm:flex sm:flex-col sm:items-end">
-            {activeService && (
-              <div className="w-85 md:w-95 lg:w-110 xl:w-130">
-                <div className="grid grid-cols-2 gap-4 lg:gap-5">
-                  {subServices[activeService]?.map((subService, index) => (
-                    <div
-                      key={subService}
-                      className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white p-3 text-center transition-all duration-300"
-                      style={{
-                        opacity: 0,
-                        animation: `fadeIn 0.4s ease-out ${index * 100}ms forwards`,
-                      }}
-                    >
-                      <span className="font-montserrat text-sm font-semibold text-[#1e2952] md:text-base lg:text-lg">
-                        {subService}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          {/* Sub-services grid - Mobile */}
-          <div className="sm:hidden">
-            {activeService && (
-              <div className="grid grid-cols-2 gap-3">
-                {subServices[activeService]?.map((subService, index) => (
-                  <div
-                    key={subService}
-                    className="flex aspect-square w-full items-center justify-center rounded-2xl bg-white p-3 text-center transition-all duration-300"
-                    style={{
-                      opacity: 0,
-                      animation: `fadeIn 0.4s ease-out ${index * 100}ms forwards`,
-                    }}
+            <div
+              ref={gridRef}
+              className="relative h-85 w-85 md:h-95 md:w-95 lg:h-110 lg:w-110 xl:h-130 xl:w-130"
+            >
+              <AnimatePresence mode="wait">
+                {activeService && (
+                  <motion.div
+                    key={activeService}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className={`absolute inset-x-0 top-0 grid gap-4 lg:gap-5 ${
+                      getBentoConfig(subServices[activeService].length).cols === 3
+                        ? "grid-cols-3"
+                        : "grid-cols-2"
+                    }`}
                   >
-                    <span className="font-montserrat text-sm font-semibold text-[#1e2952]">
-                      {subService}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                    {(() => {
+                      const items = subServices[activeService];
+                      const { spans } = getBentoConfig(items.length);
+                      return items.map((subService, index) => (
+                        <div
+                          key={subService}
+                          className={`service-card group relative flex cursor-default items-center justify-center overflow-hidden rounded-2xl bg-cream p-4 text-center transition-shadow duration-300 ${
+                            spans[index] === 3
+                              ? "col-span-3 py-8"
+                              : spans[index] === 2
+                                ? "col-span-2 py-8"
+                                : "aspect-square"
+                          }`}
+                        >
+                          <span className="absolute top-3 left-4 font-avenir text-xs font-light text-cyan/40 lg:text-sm">
+                            {String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="relative z-10 font-montserrat text-sm font-bold uppercase tracking-wide text-raisin transition-colors duration-300 group-hover:text-cyan md:text-base lg:text-xl">
+                            {subService}
+                          </span>
+                        </div>
+                      ));
+                    })()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Sub-services grid — Mobile */}
+          <div className="relative h-85 sm:hidden">
+            <AnimatePresence mode="wait">
+              {activeService && (
+                <motion.div
+                  key={activeService}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className={`absolute inset-x-0 top-0 grid gap-3 ${
+                    getBentoConfig(subServices[activeService].length).cols === 3
+                      ? "grid-cols-3"
+                      : "grid-cols-2"
+                  }`}
+                >
+                  {(() => {
+                    const items = subServices[activeService];
+                    const { spans } = getBentoConfig(items.length);
+                    return items.map((subService, index) => (
+                      <div
+                        key={subService}
+                        className={`relative flex items-center justify-center overflow-hidden rounded-2xl bg-cream p-3 text-center shadow-sm ${
+                          spans[index] === 3
+                            ? "col-span-3 py-5"
+                            : spans[index] === 2
+                              ? "col-span-2 py-5"
+                              : "aspect-square"
+                        }`}
+                      >
+                        <span className="absolute top-2 left-3 font-avenir text-xs font-light text-cyan/40">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <span className="font-montserrat text-sm font-bold uppercase tracking-wide text-raisin">
+                          {subService}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
