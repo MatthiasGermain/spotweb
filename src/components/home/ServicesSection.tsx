@@ -4,34 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "next-view-transitions";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Button } from "@/components/ui";
-
-const services = [
-  "STRATÉGIE",
-  "GRAPHISME",
-  "SITE WEB",
-  "VIDÉO",
-  "MOTION DESIGN",
-  "RÉSEAUX SOCIAUX",
-];
-
-const subServices: Record<string, string[]> = {
-  STRATÉGIE: [
-    "Campagne de communication",
-    "Accompagnement personnalisé",
-    "Plan de communication 360°",
-    "Crowdfunding",
-  ],
-  GRAPHISME: ["Identité visuelle", "Affiche", "Flyer", "Brochure", "Livret", "Kakémono"],
-  "SITE WEB": ["Création", "Maintenance", "Gestion de contenu", "Visibilité"],
-  VIDÉO: ["Vidéos promotionnelles", "Récaps d'événement", "Shorts/formats verticaux", "Clips"],
-  "MOTION DESIGN": ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo"],
-  "RÉSEAUX SOCIAUX": [
-    "Création de contenu engageant",
-    "Planning éditorial",
-    "Formation",
-    "Community management",
-  ],
-};
+import { SERVICE_NAMES as services, SUB_SERVICES as subServices } from "@/constants";
 
 const GLOW_COLOR = "98, 143, 147";
 
