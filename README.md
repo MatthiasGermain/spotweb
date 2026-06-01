@@ -85,4 +85,4 @@ Pour toute question concernant le projet, contacter [contact@spotlightcrea.com](
 
 ---
 
-Développé avec Next.js et déployé sur Vercel
+Développé avec Next.js et déployé sur Vercel - build
