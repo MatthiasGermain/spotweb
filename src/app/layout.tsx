@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ViewTransitions } from "next-view-transitions";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_OG_IMAGE } from "@/constants";
 import "./globals.css";
 
 const montserrat = localFont({
@@ -36,8 +37,40 @@ const brittany = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Spotlight | Agence de Communication Chrétienne",
-  description: "Spotlight est une agence de communication chrétienne qui accompagne les structures et projets à mettre en lumière leurs actions pour atteindre leurs objectifs.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Spotlight | Agence de Communication Chrétienne",
+    template: "%s | Spotlight",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "agence de communication",
+    "communication chrétienne",
+    "Église",
+    "stratégie de communication",
+    "graphisme",
+    "site web",
+    "vidéo",
+    "motion design",
+    "réseaux sociaux",
+  ],
+  authors: [{ name: SITE_NAME }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "Spotlight | Agence de Communication Chrétienne",
+    description: SITE_DESCRIPTION,
+    images: [SITE_OG_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Spotlight | Agence de Communication Chrétienne",
+    description: SITE_DESCRIPTION,
+    images: [SITE_OG_IMAGE.url],
+  },
 };
 
 export default function RootLayout({
