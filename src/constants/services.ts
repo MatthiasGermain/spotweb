@@ -45,7 +45,7 @@ export const SERVICES: Service[] = [
   {
     title: "MOTION DESIGN",
     description:
-      "On met votre message en mouvement pour le rendre vivant, pédagogique et mémorable.",
+      "On anime votre message pour le rendre vivant, pédagogique et mémorable.",
     subServices: ["Vidéos explicatives", "Animation de logo", "Habillage de vidéo"],
   },
   {

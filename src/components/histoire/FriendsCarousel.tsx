@@ -14,9 +14,10 @@ const slides = [
   { src: "/images/team/fun2.jpg", alt: "Duo complice" },
   { src: "/images/team/fun3.jpg", alt: "L'équipe en mode fun" },
   { src: "/images/team/fun4.jpg", alt: "L'équipe Spotlight pose" },
-  { src: "/images/team/fun5.jpg", alt: "L'équipe Spotlight" },
-  { src: "/images/team/fun6.jpg", alt: "L'équipe Spotlight" },
-  { src: "/images/team/fun7.jpg", alt: "L'équipe Spotlight" },
+  { src: "/images/team/IMG_0155.jpg", alt: "L'équipe Spotlight" },
+  { src: "/images/team/IMG_0174.jpg", alt: "L'équipe Spotlight" },
+  { src: "/images/team/IMG_1356.jpg", alt: "L'équipe Spotlight" },
+  { src: "/images/team/IMG_8877.jpg", alt: "L'équipe Spotlight" },
 ];
 
 function randomBetween(min: number, max: number) {

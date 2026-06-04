@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useIntersectionTrigger } from "@/hooks";
 import { SERVICES } from "@/constants";
 
-const GLOW_COLOR = "98, 143, 147"; // cyan
+const GLOW_COLOR = "252, 202, 70"; // sunglow
 
 export function ServicesOverview() {
   const { ref, isVisible } = useIntersectionTrigger<HTMLDivElement>({ threshold: 0.15 });
@@ -102,17 +102,17 @@ export function ServicesOverview() {
                 damping: 20,
                 delay: index * 0.08,
               }}
-              className="service-card group relative flex h-full flex-col overflow-hidden rounded-3xl bg-white p-8 transition-shadow duration-300 lg:p-10"
+              className="service-card group relative flex h-full flex-col overflow-hidden rounded-3xl bg-raisin p-8 transition-shadow duration-300 lg:p-10"
             >
-              <span className="font-avenir text-sm font-light text-cyan/50">
+              <span className="font-avenir text-sm font-light text-sunglow/70">
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <h2 className="mt-3 font-avenir text-2xl font-black uppercase tracking-wide text-raisin transition-colors duration-300 group-hover:text-cyan sm:text-3xl">
+              <h2 className="mt-3 font-avenir text-2xl font-black uppercase tracking-wide text-white transition-colors duration-300 group-hover:text-sunglow sm:text-3xl">
                 {service.title}
               </h2>
 
-              <p className="mt-4 font-montserrat text-sm leading-relaxed text-raisin/70 sm:text-base">
+              <p className="mt-4 font-montserrat text-sm leading-relaxed text-white/70 sm:text-base">
                 {service.description}
               </p>
 
@@ -120,7 +120,7 @@ export function ServicesOverview() {
                 {service.subServices.map((sub) => (
                   <li
                     key={sub}
-                    className="rounded-full bg-cream px-3 py-1 font-montserrat text-xs font-medium text-raisin/80"
+                    className="rounded-full bg-white/10 px-3 py-1 font-montserrat text-xs font-medium text-white/80"
                   >
                     {sub}
                   </li>

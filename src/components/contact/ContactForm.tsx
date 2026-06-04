@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { Button, Input, Textarea, Select, AnimatedUnderlineText } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
+import { SERVICES } from "@/constants";
 
+// Libellé lisible (« STRATÉGIE » → « Stratégie ») et valeur en slug.
+const toLabel = (title: string) => title.charAt(0) + title.slice(1).toLowerCase();
+const toValue = (title: string) =>
+  title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, "-");
+
+// Options dérivées des services réels pour rester synchronisées.
 const interestOptions = [
   { value: "", label: "Sélectionnez une option" },
-  { value: "branding", label: "Branding & Identité visuelle" },
-  { value: "web", label: "Création de site web" },
-  { value: "social", label: "Réseaux sociaux" },
-  { value: "video", label: "Production vidéo" },
-  { value: "photo", label: "Photographie" },
-  { value: "print", label: "Supports print" },
-  { value: "other", label: "Autre" },
+  ...SERVICES.map((service) => ({ value: toValue(service.title), label: toLabel(service.title) })),
+  { value: "autre", label: "Autre" },
 ];
 
 export function ContactForm() {

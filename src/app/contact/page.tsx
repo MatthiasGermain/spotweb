@@ -4,7 +4,7 @@ import { ScrollToTop } from "@/components/ui";
 import { ContactHero, ContactForm } from "@/components/contact";
 
 const description =
-  "Votre message a quelque chose à dire. Contactez Spotlight pour qu'on l'éclaire, l'amplifie et le fasse rayonner.";
+  "Votre projet a quelque chose à dire. Contactez Spotlight pour qu'on l'éclaire, l'amplifie et le fasse rayonner.";
 
 export const metadata: Metadata = {
   title: "Contact",

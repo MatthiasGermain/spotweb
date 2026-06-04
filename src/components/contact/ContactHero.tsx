@@ -33,7 +33,7 @@ export function ContactHero() {
 
         {/* Description */}
         <p className="mx-auto max-w-3xl text-base leading-relaxed text-white sm:text-lg">
-          Votre message a quelque chose à dire. Dites-le-nous, on se charge de l&apos;éclairer, de
+          Votre projet a quelque chose à dire. Dites-le-nous, on se charge de l&apos;éclairer, de
           l&apos;amplifier, de le faire rayonner.
         </p>
       </div>

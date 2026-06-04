@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
@@ -106,7 +106,15 @@ function ArrowButton({ direction, onClick }: ArrowButtonProps) {
   );
 }
 
-const testimonials = [
+interface Testimonial {
+  id: number;
+  name: string;
+  role: string;
+  quote: string;
+  image?: string;
+}
+
+const testimonials: Testimonial[] = [
   {
     id: 1,
     name: "Eva Bouazize",
@@ -117,19 +125,44 @@ const testimonials = [
   },
   {
     id: 2,
-    name: "Lorem ipsum",
-    role: "consectetur adipiscing",
+    name: "Yaëlle César",
+    role: "CNEF",
     quote:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    image: "/images/testimonials/thomas.jpg",
+      "On sent qu'il y a de la passion et de la cohésion dans l'équipe, le travail est pro et qualitatif. On a beaucoup aimé la qualité du travail fourni, les efforts pour comprendre le projet et respecter les deadlines, la réactivité malgré les imprévus de notre côté et les procédures claires. Merci beaucoup pour votre travail, on a hâte de collaborer à nouveau ensemble !",
   },
   {
     id: 3,
-    name: "Lorem ipsum",
-    role: "consectetur adipiscing",
+    name: "Pierre Patient",
+    role: "Librairie Certitude",
+    quote: "Ils sont excellents, ils mettent leurs talents au service de votre vision !",
+  },
+  {
+    id: 4,
+    name: "Thomas Merkling",
+    role: "Église évangélique de Vandœuvre",
     quote:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    image: "/images/testimonials/thomas.jpg",
+      "Vous avez plein de compétences différentes dans l'équipe, vous n'êtes pas là pour faire des sous mais pour faire des choses de qualité pour les œuvres chrétiennes. L'accompagnement peut se faire de manière assez personnalisé et spécifique. Une équipe généreuse, talentueuse et à l'écoute, on vous les recommande vivement !",
+  },
+  {
+    id: 5,
+    name: "Victoria Hary",
+    role: "Mouvement des Flambeaux et des Claires Flammes",
+    quote:
+      "J'ai aimé la polyvalence de Spotlight, la facilité des échanges et la pertinence du travail. Ils sont multi-talents et centrés sur Jésus ! Continuez comme ça !! Hâte de voir vos futurs projets.",
+  },
+  {
+    id: 6,
+    name: "Rachel Nicosia",
+    role: "Église Connexion de Pompey",
+    quote:
+      "Une équipe jeune et dynamique qui crée une communication moderne et pertinente, qui change un peu de ce qu'on peut connaître dans certains milieux chrétiens. Ils sont rapides avec une simplicité d'échanges. Franchement le travail est top et on était très contents du résultat.",
+  },
+  {
+    id: 7,
+    name: "Adeline Herr",
+    role: "Éducatrice spécialisée",
+    quote:
+      "J'ai apprécié leur gentillesse, leur écoute et leurs compétences qui étaient propres, professionnelles et agréables.",
   },
 ];
 
@@ -150,6 +183,7 @@ const slideVariants = {
 
 export function TestimonialsSection() {
   const [[activeIndex, direction], setActiveIndex] = useState([0, 0]);
+  const [isPaused, setIsPaused] = useState(false);
 
   const paginate = (newDirection: number) => {
     const newIndex = activeIndex + newDirection;
@@ -163,6 +197,15 @@ export function TestimonialsSection() {
   };
 
   const currentTestimonial = testimonials[activeIndex];
+
+  // Rotation automatique (en pause au survol)
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setTimeout(() => {
+      setActiveIndex(([i]) => [(i + 1) % testimonials.length, 1]);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [activeIndex, isPaused]);
 
   return (
     <section className="relative overflow-hidden bg-raisin py-12 sm:py-16 lg:py-20">
@@ -199,12 +242,16 @@ export function TestimonialsSection() {
         </h2>
 
         {/* Carousel container with arrows */}
-        <div className="relative flex items-center">
+        <div
+          className="relative flex items-center"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           {/* Left arrow */}
           <ArrowButton direction="left" onClick={() => paginate(-1)} />
 
-          {/* Carousel content */}
-          <div className="mx-auto min-h-140 w-full max-w-5xl overflow-hidden px-4 sm:min-h-120 sm:px-8 lg:px-10">
+          {/* Carousel content - hauteur fixe pour éviter les sauts entre témoignages */}
+          <div className="mx-auto flex h-120 w-full max-w-5xl items-center overflow-hidden px-14 sm:px-16 lg:px-20">
             <AnimatePresence initial={false} custom={direction} mode="wait">
               <motion.div
                 key={currentTestimonial.id}
@@ -228,20 +275,35 @@ export function TestimonialsSection() {
                     paginate(-1);
                   }
                 }}
-                className="flex flex-col items-center gap-6 sm:flex-row sm:items-stretch sm:gap-8 lg:gap-10"
+                className={`flex h-full w-full flex-col items-center justify-center gap-6 sm:gap-8 lg:gap-10 ${
+                  currentTestimonial.image ? "sm:flex-row" : ""
+                }`}
               >
-                {/* Photo - scaled x1.7 */}
-                <div className="relative aspect-4/5 w-96 shrink-0 overflow-hidden sm:w-[55%]">
-                  <Image
-                    src={currentTestimonial.image}
-                    alt={currentTestimonial.name}
-                    fill
-                    className="object-cover object-top"
-                  />
-                </div>
+                {/* Photo (optionnelle) - format portrait */}
+                {currentTestimonial.image && (
+                  <div className="relative aspect-4/5 h-56 w-auto shrink-0 overflow-hidden sm:h-80 lg:h-96">
+                    <Image
+                      src={currentTestimonial.image}
+                      alt={currentTestimonial.name}
+                      fill
+                      className="object-cover object-top"
+                    />
+                  </div>
+                )}
 
-                {/* Content - 65% on desktop */}
-                <div className="flex flex-col items-center justify-center text-center sm:w-[65%] sm:items-start sm:text-left">
+                {/* Content */}
+                <div
+                  className={`flex flex-col justify-center ${
+                    currentTestimonial.image
+                      ? "items-center text-center sm:flex-1 sm:items-start sm:text-left"
+                      : "mx-auto max-w-3xl items-center text-center"
+                  }`}
+                >
+                  {!currentTestimonial.image && (
+                    <span className="-mb-4 font-avenir text-7xl font-black leading-none text-sunglow sm:text-8xl">
+                      &ldquo;
+                    </span>
+                  )}
                   {/* Name with underline */}
                   <div className="mb-1">
                     <h3 className="font-avenir text-2xl font-black uppercase text-white sm:text-3xl lg:text-4xl">
