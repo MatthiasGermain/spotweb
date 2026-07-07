@@ -30,4 +30,4 @@ export const ORGANIZATION = {
 
 // Code de vérification Google Search Console (balise meta).
 // À renseigner depuis Search Console → Propriété par balise HTML.
-export const GOOGLE_SITE_VERIFICATION = "";
+export const GOOGLE_SITE_VERIFICATION: string = "";
