@@ -14,3 +14,20 @@ export const SITE_OG_IMAGE = {
   height: 1272,
   alt: "L'équipe Spotlight",
 };
+
+// Informations sur l'organisation, utilisées pour les données structurées (JSON-LD).
+export const ORGANIZATION = {
+  legalName: "ExpresSon",
+  siren: "511 125 767",
+  logo: `${SITE_URL}/images/logo_noir_sans_fond.png`,
+  address: {
+    streetAddress: "11 rue de l'avant garde",
+    postalCode: "54340",
+    addressLocality: "Pompey",
+    addressCountry: "FR",
+  },
+} as const;
+
+// Code de vérification Google Search Console (balise meta).
+// À renseigner depuis Search Console → Propriété par balise HTML.
+export const GOOGLE_SITE_VERIFICATION = "";

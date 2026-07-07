@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ViewTransitions } from "next-view-transitions";
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_OG_IMAGE } from "@/constants";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_OG_IMAGE,
+  GOOGLE_SITE_VERIFICATION,
+} from "@/constants";
+import { JsonLd } from "@/components/seo";
 import "./globals.css";
 
 const montserrat = localFont({
@@ -71,6 +78,9 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [SITE_OG_IMAGE.url],
   },
+  ...(GOOGLE_SITE_VERIFICATION && {
+    verification: { google: GOOGLE_SITE_VERIFICATION },
+  }),
 };
 
 export default function RootLayout({
@@ -82,6 +92,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="fr">
         <body className={`${montserrat.variable} ${avenir.variable} ${brittany.variable} antialiased`}>
+          <JsonLd />
           {children}
         </body>
       </html>

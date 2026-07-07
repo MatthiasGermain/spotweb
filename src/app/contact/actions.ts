@@ -60,12 +60,15 @@ export async function sendContactEmail(data: {
 
     if (error) {
       console.error("Resend error:", error);
-      return { ok: false, error: "L'envoi a échoué. Merci de réessayer plus tard." };
+      // DEBUG temporaire : remonte le vrai message pour diagnostic
+      return { ok: false, error: `[debug] ${error.name}: ${error.message}` };
     }
 
     return { ok: true };
   } catch (err) {
     console.error("Contact form error:", err);
-    return { ok: false, error: "Une erreur est survenue. Merci de réessayer plus tard." };
+    // DEBUG temporaire : remonte le vrai message pour diagnostic
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `[debug] ${msg}` };
   }
 }
