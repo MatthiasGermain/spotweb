@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Input, Textarea, Select, AnimatedUnderlineText } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
 import { SERVICES } from "@/constants";
+import { sendContactEmail } from "@/app/contact/actions";
 
 // Libellé lisible (« STRATÉGIE » → « Stratégie ») et valeur en slug.
 const toLabel = (title: string) => title.charAt(0) + title.slice(1).toLowerCase();
@@ -34,10 +35,23 @@ export function ContactForm() {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implémenter l'envoi du formulaire
-    console.log("Form submitted:", formData);
+    setStatus("sending");
+    setErrorMessage("");
+
+    const result = await sendContactEmail(formData);
+
+    if (result.ok) {
+      setStatus("success");
+      setFormData({ name: "", email: "", interest: "", message: "" });
+    } else {
+      setStatus("error");
+      setErrorMessage(result.error ?? "Une erreur est survenue.");
+    }
   };
 
   const handleChange = (
@@ -133,9 +147,33 @@ export function ContactForm() {
               required
             />
 
+            {status === "success" && (
+              <p
+                role="status"
+                className="rounded-lg bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-800"
+              >
+                Merci ! Votre message a bien été envoyé, nous vous répondrons rapidement.
+              </p>
+            )}
+
+            {status === "error" && (
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-800"
+              >
+                {errorMessage}
+              </p>
+            )}
+
             <div className="pt-4 text-center">
-              <Button type="submit" colorScheme="sunglow" size="lg" className="px-16">
-                Envoyer
+              <Button
+                type="submit"
+                colorScheme="sunglow"
+                size="lg"
+                className="px-16 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={status === "sending"}
+              >
+                {status === "sending" ? "Envoi en cours…" : "Envoyer"}
               </Button>
             </div>
           </form>
