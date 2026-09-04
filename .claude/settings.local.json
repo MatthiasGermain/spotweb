@@ -2,7 +2,24 @@
   "permissions": {
     "allow": [
       "Bash(npx create-next-app:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(powershell -Command \"\\(Get-Content ''src/components/ui/StaggeredMenu.tsx''\\) -replace ''color: var\\\\\\(--sm-accent, #fcca46\\\\\\);'', ''color: #c9a0dc;'' | Set-Content ''src/components/ui/StaggeredMenu.tsx''\")",
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "Bash(test:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(npx eslint:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx next build)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(npm uninstall:*)",
+      "Read(//c/Users/Matthias/documents_local/CODE/GIT/spotweb/src/constants/**)",
+      "Read(//c/Users/Matthias/documents_local/CODE/GIT/spotweb/src/components/ui/**)",
+      "Read(//c/Users/Matthias/documents_local/CODE/GIT/spotweb/src/components/layout/**)",
+      "Read(//c/Users/Matthias/documents_local/CODE/GIT/spotweb/src/app/**)",
+      "Read(//c/Users/Matthias/documents_local/CODE/GIT/spotweb/**)"
     ]
   }
 }

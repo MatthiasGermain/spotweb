@@ -10,9 +10,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="mt-10 first:mt-0">
+    <section id={id} className="mt-10 scroll-mt-24 first:mt-0">
       <h2 className="font-avenir text-xl font-black uppercase tracking-wide text-raisin sm:text-2xl">
         {title}
       </h2>
@@ -92,7 +100,7 @@ export default function MentionsLegales() {
             </p>
           </Section>
 
-          <Section title="Données personnelles">
+          <Section title="Données personnelles" id="donnees-personnelles">
             <p>
               Les informations transmises via le formulaire de contact et le formulaire d&apos;inscription
               à la newsletter sont utilisées uniquement pour répondre à vos demandes et vous tenir

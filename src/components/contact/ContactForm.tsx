@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button, Input, Textarea, Select, AnimatedUnderlineText } from "@/components/ui";
 import { useIntersectionTrigger } from "@/hooks";
 import { SERVICES } from "@/constants";
@@ -164,6 +165,20 @@ export function ContactForm() {
                 {errorMessage}
               </p>
             )}
+
+            {/* Mention RGPD : information sur le traitement au point de collecte. */}
+            <p className="pt-2 text-center font-montserrat text-xs leading-relaxed text-raisin/70">
+              Les informations recueillies servent uniquement à traiter votre demande et ne sont
+              jamais cédées à des tiers. Vous disposez d&apos;un droit d&apos;accès, de rectification
+              et de suppression de vos données.{" "}
+              <Link
+                href="/mentions-legales#donnees-personnelles"
+                className="underline hover:text-raisin"
+              >
+                En savoir plus
+              </Link>
+              .
+            </p>
 
             <div className="pt-4 text-center">
               <Button
