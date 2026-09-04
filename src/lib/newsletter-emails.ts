@@ -107,7 +107,7 @@ export function welcomeEmail({ firstName }: { firstName: string }) {
   const html = layout(`
     ${line(`Salut ${name},`)}
     ${line(`Bienvenue dans la newsletter de ${SITE_NAME} ! On est trop contents de t'avoir avec nous 🙌`)}
-    ${line(`Ici, pas de blabla inutile : on te partage nos coulisses, nos derniers projets, quelques conseils com', et toute l'actu de l'équipe, histoire de te mettre un peu de lumière dans ta boîte mail de temps en temps.`)}
+    ${line(`Ici, on te partage nos coulisses, nos derniers projets, quelques conseils com', et toute l'actu de l'équipe, histoire de te mettre un peu de lumière dans ta boîte mail de temps en temps.`)}
     ${line(`Et si jamais t'as une question, une envie de collab, ou juste envie de dire bonjour, notre boîte mail est grande ouverte 💌`)}
     ${line(`À très vite,`)}
   `);
@@ -116,7 +116,7 @@ export function welcomeEmail({ firstName }: { firstName: string }) {
 
 Bienvenue dans la newsletter de ${SITE_NAME} ! On est trop contents de t'avoir avec nous 🙌
 
-Ici, pas de blabla inutile : on te partage nos coulisses, nos derniers projets, quelques conseils com', et toute l'actu de l'équipe, histoire de te mettre un peu de lumière dans ta boîte mail de temps en temps.
+Ici, on te partage nos coulisses, nos derniers projets, quelques conseils com', et toute l'actu de l'équipe, histoire de te mettre un peu de lumière dans ta boîte mail de temps en temps.
 
 Et si jamais t'as une question, une envie de collab, ou juste envie de dire bonjour, notre boîte mail est grande ouverte 💌
 
