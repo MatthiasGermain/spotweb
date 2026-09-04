@@ -1,8 +1,25 @@
 "use server";
 
-// Inscription newsletter via l'endpoint "post-json" de Mailchimp.
-// On évite l'embed officiel (CSS + jQuery + mc-validate.js) pour ne pas casser la DA :
-// le formulaire reste 100% maison, seule la soumission part chez Mailchimp.
+import { headers } from "next/headers";
+import { Resend } from "resend";
+import { SITE_URL } from "@/constants";
+import { createNewsletterToken } from "@/lib/newsletter-token";
+import { confirmationEmail } from "@/lib/newsletter-emails";
+
+// Double opt-in maison :
+//   1. le formulaire déclenche l'envoi d'un email de confirmation (Resend) ;
+//   2. le clic sur le lien signé inscrit réellement le contact dans Mailchimp.
+// Rien n'est envoyé à Mailchimp tant que l'adresse n'est pas confirmée : la liste
+// reste propre et le consentement est prouvé.
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Repli sur l'expéditeur du formulaire de contact, déjà vérifié dans Resend.
+const FROM =
+  process.env.NEWSLETTER_FROM_EMAIL ??
+  process.env.CONTACT_FROM_EMAIL ??
+  "Spotlight <noreply@spotlightcrea.fr>";
+
 const MAILCHIMP_U = process.env.MAILCHIMP_U ?? "8662b47764a2dcf9b2f7389cd";
 const MAILCHIMP_ID = process.env.MAILCHIMP_LIST_ID ?? "c961fea884";
 const MAILCHIMP_F_ID = process.env.MAILCHIMP_F_ID ?? "00891ae1f0";
@@ -12,10 +29,6 @@ const MAILCHIMP_DOMAIN = process.env.MAILCHIMP_DOMAIN ?? "spotlightcrea.us8.list
 export type NewsletterState = {
   ok: boolean;
   error?: string;
-  // true si l'audience est en double opt-in : Mailchimp a envoyé un mail de
-  // confirmation et le contact reste « Pending » tant qu'il n'a pas cliqué.
-  // false en simple opt-in : aucun mail n'est envoyé, l'inscription est immédiate.
-  pending?: boolean;
 };
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -29,11 +42,12 @@ const stripHtml = (v: string) =>
     .replace(/&quot;/g, '"')
     .trim();
 
+/** Étape 1 : validation + envoi de l'email de confirmation. */
 export async function subscribeToNewsletter(data: {
   firstName: string;
   lastName: string;
   email: string;
-  // Honeypot Mailchimp : rempli = bot.
+  // Honeypot : rempli = bot.
   botField?: string;
 }): Promise<NewsletterState> {
   const firstName = data.firstName?.trim() ?? "";
@@ -52,14 +66,50 @@ export async function subscribeToNewsletter(data: {
   if (!isEmail(email)) {
     return { ok: false, error: "L'adresse email saisie n'est pas valide." };
   }
+  if (firstName.length > 100 || lastName.length > 100 || email.length > 200) {
+    return { ok: false, error: "Les informations saisies sont trop longues." };
+  }
 
+  try {
+    const token = createNewsletterToken({ firstName, lastName, email });
+    // Origine réelle de la requête, pour que le lien fonctionne aussi en local
+    // (SITE_URL pointe vers la production).
+    const headerList = await headers();
+    const host = headerList.get("host");
+    const proto = headerList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+    const origin = host ? `${proto}://${host}` : SITE_URL;
+    const confirmUrl = `${origin}/api/newsletter/confirm?token=${encodeURIComponent(token)}`;
+    const { subject, html, text } = confirmationEmail({ firstName, confirmUrl });
+
+    const { error } = await resend.emails.send({ from: FROM, to: email, subject, html, text });
+
+    if (error) {
+      console.error("Newsletter confirmation email error:", error);
+      return { ok: false, error: "L'email de confirmation n'a pas pu être envoyé." };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    console.error("Newsletter signup error:", err);
+    return { ok: false, error: "Une erreur est survenue. Merci de réessayer." };
+  }
+}
+
+export type ConfirmResult = "ok" | "already" | "error";
+
+/** Étape 2 : inscription réelle dans Mailchimp, une fois l'adresse confirmée. */
+export async function addConfirmedSubscriberToMailchimp(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+}): Promise<ConfirmResult> {
   const params = new URLSearchParams({
     u: MAILCHIMP_U,
     id: MAILCHIMP_ID,
     f_id: MAILCHIMP_F_ID,
-    EMAIL: email,
-    FNAME: firstName,
-    LNAME: lastName,
+    EMAIL: data.email,
+    FNAME: data.firstName,
+    LNAME: data.lastName,
     tags: MAILCHIMP_TAGS,
   });
 
@@ -74,22 +124,16 @@ export async function subscribeToNewsletter(data: {
     const json = raw.replace(/^[^(]*\(/, "").replace(/\)[;\s]*$/, "");
     const result = JSON.parse(json) as { result: string; msg: string };
 
-    if (result.result === "success") {
-      // Mailchimp annonce l'envoi d'un mail de confirmation uniquement en double opt-in
-      // (« Almost finished... we need to confirm your email address » / « Presque fini... »).
-      const successMsg = stripHtml(result.msg ?? "");
-      const pending = /confirm|presque|almost/i.test(successMsg);
-      return { ok: true, pending };
-    }
+    if (result.result === "success") return "ok";
 
     const msg = stripHtml(result.msg ?? "");
-    // Déjà inscrit : on n'affiche pas le pavé Mailchimp par défaut.
-    if (/already subscribed|d[ée]j[àa] inscrit/i.test(msg)) {
-      return { ok: false, error: "Cette adresse est déjà inscrite à la newsletter." };
-    }
-    return { ok: false, error: msg || "L'inscription n'a pas pu aboutir." };
+    // Déjà dans la liste : ce n'est pas une erreur pour l'utilisateur.
+    if (/already subscribed|d[ée]j[àa] inscrit/i.test(msg)) return "already";
+
+    console.error("Mailchimp subscribe failed:", msg);
+    return "error";
   } catch (err) {
-    console.error("Newsletter signup error:", err);
-    return { ok: false, error: "Une erreur est survenue. Merci de réessayer." };
+    console.error("Mailchimp subscribe error:", err);
+    return "error";
   }
 }

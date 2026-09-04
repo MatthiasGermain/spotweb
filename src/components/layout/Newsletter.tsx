@@ -18,8 +18,6 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
 
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  // L'audience peut être en simple ou double opt-in : le message de succès s'adapte.
-  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +31,6 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
 
       if (result.ok) {
         setStatus("success");
-        setNeedsConfirmation(result.pending ?? false);
         setFirstName("");
         setLastName("");
         setEmail("");
@@ -74,9 +71,7 @@ export function Newsletter({ theme = "light" }: NewsletterProps) {
             role="status"
             className={`w-full text-sm font-medium sm:w-auto sm:text-right ${isDark ? "text-white" : "text-raisin"}`}
           >
-            {needsConfirmation
-              ? "Merci ! Un email de confirmation vient de t'être envoyé."
-              : "Merci ! Ton inscription est bien enregistrée."}
+            Merci ! Clique sur le lien qu&apos;on vient de t&apos;envoyer par mail pour confirmer.
           </p>
         ) : (
           <div className="w-full sm:w-auto">
