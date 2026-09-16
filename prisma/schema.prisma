@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  MEMBER
+  TRESORIER
+  ADMIN
+}
+
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique
+  password     String
+  prenom       String       @default("")
+  nom          String       @default("")
+  email        String       @default("")
+  adresse      String       @default("")
+  iban         String       @default("")
+  role         Role         @default(MEMBER)
+  disabled     Boolean      @default(false)
+  signatureUrl String?
+  createdAt    DateTime     @default(now())
+  submissions  Submission[]
+}
+
+model Submission {
+  id          String   @id
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  nom         String
+  periode     String
+  association String
+  contexte    String   @default("")
+  paiement    String
+  total       Decimal  @db.Decimal(10, 2)
+  status      String   @default("created")
+  lignes      Json
+  pjNames     Json
+  archiveUrl  String
+
+  @@index([userId])
+}

@@ -1,0 +1,366 @@
+/*
+ * Styles de l'app "Notes de frais" (/ndf), scopés sous .ndf-app pour ne
+ * jamais interférer avec le reste du site (Tailwind + design system
+ * Spotlight) qui partage le même root layout.
+ */
+.ndf-app,
+.ndf-app *,
+.ndf-app *::before,
+.ndf-app *::after {
+  box-sizing: border-box;
+}
+
+.ndf-app * {
+  margin: 0;
+  padding: 0;
+}
+
+.ndf-app {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100dvh;
+}
+
+.ndf-app a {
+  color: inherit;
+}
+
+.ndf-app button {
+  font-family: inherit;
+}
+
+/* ── Layout commun ───────────────────────────────────────────────────────── */
+.ndf-app .container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 16px;
+}
+.ndf-app .container-wide {
+  width: 92%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 0;
+}
+.ndf-app .container-medium {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 16px;
+}
+.ndf-app .container-narrow {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.ndf-app .card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  padding: 26px 30px;
+  margin-bottom: 24px;
+}
+.ndf-app .section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Formulaires ─────────────────────────────────────────────────────────── */
+.ndf-app .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.ndf-app .form-row.full {
+  grid-template-columns: 1fr;
+}
+.ndf-app .form-row.thirds {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.ndf-app label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+}
+.ndf-app label .req {
+  color: #ef4444;
+  margin-left: 2px;
+}
+.ndf-app input[type="text"],
+.ndf-app input[type="date"],
+.ndf-app input[type="number"],
+.ndf-app input[type="email"],
+.ndf-app input[type="password"],
+.ndf-app input[type="file"],
+.ndf-app textarea,
+.ndf-app select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: #fff;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+.ndf-app input:focus,
+.ndf-app textarea:focus,
+.ndf-app select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+.ndf-app textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+.ndf-app input[type="file"] {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.ndf-app .btn {
+  background: #1e3a5f;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ndf-app .btn:hover {
+  background: #2d5087;
+}
+.ndf-app .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ndf-app .btn-danger {
+  background: #ef4444;
+}
+.ndf-app .btn-danger:hover {
+  background: #dc2626;
+}
+.ndf-app .btn-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Alertes ─────────────────────────────────────────────────────────────── */
+.ndf-app .alert {
+  border-radius: 8px;
+  padding: 13px 16px;
+  margin-bottom: 18px;
+  font-size: 0.87rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ndf-app .alert-success {
+  background: #dcfce7;
+  color: #166534;
+  border-left: 4px solid #22c55e;
+}
+.ndf-app .alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.ndf-app .badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ndf-app .badge-vir {
+  background: #dcfce7;
+  color: #166534;
+}
+.ndf-app .badge-chq {
+  background: #fef9c3;
+  color: #854d0e;
+}
+.ndf-app .badge-pj {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.ndf-app .badge-assoc-ec {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.ndf-app .badge-assoc-fc {
+  background: #fce7f3;
+  color: #9d174d;
+}
+.ndf-app .badge-admin {
+  background: #fef3c7;
+  color: #92400e;
+}
+.ndf-app .badge-tresorier {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.ndf-app .badge-member {
+  background: #f1f5f9;
+  color: #475569;
+}
+.ndf-app .badge-disabled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.ndf-app .badge-pending {
+  background: #f1f5f9;
+  color: #475569;
+}
+.ndf-app .badge-processed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ── Boutons liens ───────────────────────────────────────────────────────── */
+.ndf-app .btn-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 5px 11px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.ndf-app .btn-dl:hover {
+  background: #dbeafe;
+}
+.ndf-app .btn-del {
+  background: none;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ndf-app .btn-del:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+/* ── Tables (historique / admin / membres) ──────────────────────────────── */
+.ndf-app .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ndf-app .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ndf-app .table-wrap th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+.ndf-app .table-wrap th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.ndf-app .table-wrap th.sort-asc::after {
+  content: " ↑";
+  color: #3b82f6;
+}
+.ndf-app .table-wrap th.sort-desc::after {
+  content: " ↓";
+  color: #3b82f6;
+}
+.ndf-app .table-wrap td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.87rem;
+  vertical-align: middle;
+}
+.ndf-app .table-wrap td.wrap {
+  white-space: normal;
+}
+.ndf-app .table-wrap tr:last-child td {
+  border-bottom: none;
+}
+.ndf-app .table-wrap tr:hover td {
+  background: #f8fafc;
+}
+.ndf-app .table-wrap tr.row-disabled td {
+  opacity: 0.5;
+}
+
+.ndf-app .empty-state {
+  text-align: center;
+  padding: 36px 20px;
+  color: #94a3b8;
+}
+.ndf-app .empty-state div {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.ndf-app .summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.ndf-app .sum-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  color: #475569;
+}
+.ndf-app .sum-chip strong {
+  color: #1e3a5f;
+  font-size: 1.05rem;
+}
+
+.ndf-app .user-chip {
+  font-family: monospace;
+  font-size: 0.82rem;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #475569;
+}
