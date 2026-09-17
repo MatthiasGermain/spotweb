@@ -1,14 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
+import ShadSelect from "./ShadSelect";
 
 export default function AdminFilters({
   usernames,
+  associations,
   filterUser,
   filterStatus,
   filterAssoc,
 }: {
   usernames: string[];
+  associations: string[];
   filterUser: string;
   filterStatus: string;
   filterAssoc: string;
@@ -25,39 +29,38 @@ export default function AdminFilters({
   const isDefault = filterUser === "" && filterStatus === "" && filterAssoc === "";
 
   return (
-    <div className="filters">
-      <select value={filterUser} onChange={(e) => applyFilter("u", e.target.value)}>
-        <option value="">Tous les utilisateurs</option>
-        {usernames.map((u) => (
-          <option key={u} value={u}>
-            {u}
-          </option>
-        ))}
-      </select>
-
-      <select value={filterStatus} onChange={(e) => applyFilter("status", e.target.value)}>
-        <option value="">Tous les statuts</option>
-        <option value="created">En attente</option>
-        <option value="processed">Traitées</option>
-      </select>
-
-      <select value={filterAssoc} onChange={(e) => applyFilter("assoc", e.target.value)}>
-        <option value="">Toutes les associations</option>
-        <option value="Eglise Connexion">Eglise Connexion</option>
-        <option value="Family Connect">Family Connect</option>
-      </select>
-
-      <a href="/ndf/admin" className={isDefault ? "active" : ""}>
-        ✕ Réinitialiser
-      </a>
-
-      <style>{`
-        .filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-        .filters select, .filters a { padding: 7px 12px; border: 1px solid #d1d5db; border-radius: 6px;
-                                      font-size: .83rem; background: white; color: #374151; text-decoration: none; }
-        .filters select:focus { outline: none; border-color: #3b82f6; }
-        .filters a.active { background: #1e3a5f; color: white; border-color: #1e3a5f; }
-      `}</style>
+    <div className="flex items-center gap-2 flex-wrap">
+      <ShadSelect
+        name="__fu"
+        options={[{ value: "", label: "Tous les utilisateurs" }, ...usernames.map((u) => ({ value: u, label: u }))]}
+        defaultValue={filterUser}
+        placeholder="Utilisateur"
+        onValueChange={(v) => applyFilter("u", v)}
+      />
+      <ShadSelect
+        name="__fs"
+        options={[
+          { value: "", label: "Tous les statuts" },
+          { value: "created", label: "En attente" },
+          { value: "processed", label: "Traitées" },
+          { value: "draft", label: "Brouillons" },
+        ]}
+        defaultValue={filterStatus}
+        placeholder="Statut"
+        onValueChange={(v) => applyFilter("status", v)}
+      />
+      <ShadSelect
+        name="__fa"
+        options={[{ value: "", label: "Toutes les associations" }, ...associations.map((a) => ({ value: a, label: a }))]}
+        defaultValue={filterAssoc}
+        placeholder="Association"
+        onValueChange={(v) => applyFilter("assoc", v)}
+      />
+      {!isDefault && (
+        <a href="/ndf/admin" className="btn btn-ghost btn-sm" style={{ color: "var(--muted-foreground)" }}>
+          <X className="size-3.5" /> Réinit.
+        </a>
+      )}
     </div>
   );
 }

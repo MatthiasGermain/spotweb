@@ -1,7 +1,9 @@
 import { requireRole } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
+import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associations";
 import { formatDateFr, formatMontant } from "@/lib/ndf/format";
 import AdminFilters from "@/components/ndf/AdminFilters";
+import { Download, CircleCheck, Undo2 } from "lucide-react";
 import { toggleStatusAction } from "./actions";
 
 export default async function AdminPage({
@@ -17,6 +19,8 @@ export default async function AdminPage({
   const filterAssoc = sp.assoc ?? "";
 
   const users = await prisma.user.findMany({ select: { username: true } });
+  await ensureDefaultAssociations();
+  const assocList = await getAssociations();
 
   const submissions = await prisma.submission.findMany({
     where: {
@@ -37,42 +41,48 @@ export default async function AdminPage({
     .reduce((s, sub) => s + Number(sub.total), 0);
 
   return (
-    <div className="container-wide">
-      <div className="stats">
-        <div className="stat-card">
-          <div className="stat-label">Total (filtre actif)</div>
+    <div className="page">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="card stat-card card-body">
+          <div className="stat-label">Total (filtre)</div>
           <div className="stat-value">{formatMontant(totalAll)}</div>
           <div className="stat-sub">{submissions.length} note(s)</div>
         </div>
-        <div className="stat-card">
+        <div className="card stat-card card-body">
           <div className="stat-label">En attente</div>
           <div className="stat-value">{formatMontant(totalPending)}</div>
-          <div className="stat-sub" style={{ color: "#f59e0b" }}>
+          <div className="stat-sub" style={{ color: "#d97706" }}>
             à traiter
           </div>
         </div>
-        <div className="stat-card">
+        <div className="card stat-card card-body">
           <div className="stat-label">Traitées</div>
           <div className="stat-value">{formatMontant(totalProcessed)}</div>
-          <div className="stat-sub" style={{ color: "#22c55e" }}>
+          <div className="stat-sub" style={{ color: "#166534" }}>
             remboursées
           </div>
         </div>
       </div>
 
       <div className="card">
-        <AdminFilters
-          usernames={users.map((u) => u.username)}
-          filterUser={filterUser}
-          filterStatus={filterStatus}
-          filterAssoc={filterAssoc}
-        />
+        <div className="card-header flex items-center justify-between gap-4 flex-wrap">
+          <div className="card-title">Notes de frais</div>
+          <AdminFilters
+            usernames={users.map((u) => u.username)}
+            associations={assocList.map((a) => a.nom)}
+            filterUser={filterUser}
+            filterStatus={filterStatus}
+            filterAssoc={filterAssoc}
+          />
+        </div>
 
         {submissions.length === 0 ? (
-          <div className="empty-state">Aucune note de frais pour ce filtre.</div>
+          <div className="card-body text-center py-12" style={{ color: "var(--muted-foreground)" }}>
+            Aucune note de frais pour ce filtre.
+          </div>
         ) : (
-          <div className="table-wrap">
-            <table>
+          <div className="overflow-x-auto">
+            <table className="tbl">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -89,60 +99,74 @@ export default async function AdminPage({
               </thead>
               <tbody>
                 {submissions.map((sub) => {
-                  const assocCls = sub.association.includes("Connexion") ? "badge-assoc-ec" : "badge-assoc-fc";
+                  const assocCls = sub.association.includes("Connexion") ? "badge-purple" : "badge-pink";
                   const pjCount = Array.isArray(sub.pjNames) ? sub.pjNames.length : 0;
                   return (
                     <tr key={sub.id}>
-                      <td style={{ whiteSpace: "nowrap", fontSize: ".78rem" }}>{formatDateFr(sub.createdAt)}</td>
-                      <td>
-                        <span className="user-chip">{sub.user.username}</span>
+                      <td className="text-muted-foreground" style={{ whiteSpace: "nowrap", fontSize: ".8rem", color: "var(--muted-foreground)" }}>
+                        {formatDateFr(sub.createdAt)}
                       </td>
                       <td>
-                        <strong>{sub.nom}</strong>
+                        <span
+                          className="font-mono"
+                          style={{ background: "var(--muted)", padding: "2px 8px", borderRadius: 4, fontSize: ".75rem" }}
+                        >
+                          {sub.user.username}
+                        </span>
                       </td>
+                      <td className="font-medium">{sub.nom}</td>
                       <td style={{ whiteSpace: "nowrap" }}>{sub.periode}</td>
-                      <td>
-                        {sub.association ? (
-                          <span className={`badge ${assocCls}`}>{sub.association}</span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td>{pjCount > 0 ? <span className="badge badge-pj">{pjCount}</span> : "—"}</td>
-                      <td style={{ textAlign: "right", fontWeight: 600, whiteSpace: "nowrap" }}>
+                      <td>{sub.association ? <span className={`badge ${assocCls}`}>{sub.association}</span> : "—"}</td>
+                      <td>{pjCount > 0 ? <span className="badge badge-blue">{pjCount}</span> : "—"}</td>
+                      <td className="font-semibold" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                         {formatMontant(Number(sub.total))}
                       </td>
                       <td>
                         {sub.paiement === "virement" ? (
-                          <span className="badge badge-vir">Virement</span>
+                          <span className="badge badge-success">Virement</span>
                         ) : (
-                          <span className="badge badge-chq">Chèque</span>
+                          <span className="badge badge-warning">Chèque</span>
                         )}
                       </td>
                       <td>
                         {sub.status === "processed" ? (
-                          <span className="badge badge-processed">✓ Traitée</span>
+                          <span className="badge badge-success">✓ Traitée</span>
+                        ) : sub.status === "draft" ? (
+                          <span className="badge badge-warning">✏ Brouillon</span>
                         ) : (
-                          <span className="badge badge-pending">En attente</span>
+                          <span className="badge badge-secondary">En attente</span>
                         )}
                       </td>
-                      <td style={{ whiteSpace: "nowrap" }}>
-                        <a href={`/ndf/api/download/${encodeURIComponent(sub.id)}`} className="btn-dl">
-                          ⬇ ZIP
-                        </a>
-                        <form action={toggleStatusAction} style={{ display: "inline", marginLeft: 6 }}>
-                          <input type="hidden" name="sub_id" value={sub.id} />
-                          <input type="hidden" name="current_status" value={sub.status} />
-                          {sub.status === "processed" ? (
-                            <button type="submit" className="btn-status btn-mark-undone">
-                              ↩ Annuler
-                            </button>
-                          ) : (
-                            <button type="submit" className="btn-status btn-mark-done">
-                              ✓ Traiter
-                            </button>
-                          )}
-                        </form>
+                      <td>
+                        <div className="btn-group" style={{ justifyContent: "flex-end" }}>
+                          <a
+                            href={`/ndf/api/download/${encodeURIComponent(sub.id)}`}
+                            className="btn btn-outline btn-sm btn-icon"
+                            data-tip="Télécharger l'archive ZIP"
+                            aria-label="Télécharger"
+                          >
+                            <Download className="size-4" />
+                          </a>
+                          <form action={toggleStatusAction} style={{ display: "contents" }}>
+                            <input type="hidden" name="sub_id" value={sub.id} />
+                            <input type="hidden" name="current_status" value={sub.status} />
+                            {sub.status === "processed" ? (
+                              <button type="submit" className="btn btn-outline btn-sm btn-icon" data-tip="Annuler le traitement" aria-label="Annuler">
+                                <Undo2 className="size-4" />
+                              </button>
+                            ) : (
+                              <button
+                                type="submit"
+                                className="btn btn-outline btn-sm btn-icon"
+                                data-tip="Marquer comme traitée"
+                                aria-label="Traiter"
+                                style={{ color: "oklch(0.38 0.10 152)", borderColor: "oklch(0.90 0.05 152)" }}
+                              >
+                                <CircleCheck className="size-4" />
+                              </button>
+                            )}
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -152,25 +176,6 @@ export default async function AdminPage({
           </div>
         )}
       </div>
-
-      <style>{`
-        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-        .stat-card { background: white; border-radius: 10px; padding: 18px 22px;
-                     box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-        .stat-label { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-                      color: #64748b; margin-bottom: 6px; }
-        .stat-value { font-size: 1.4rem; font-weight: 700; color: #1e3a5f; }
-        .stat-sub   { font-size: .78rem; color: #94a3b8; margin-top: 2px; }
-        .btn-status { border: none; border-radius: 5px; padding: 5px 12px; font-size: .78rem; font-weight: 600;
-                      cursor: pointer; transition: all .15s; white-space: nowrap; }
-        .btn-mark-done   { background: #dcfce7; color: #166534; }
-        .btn-mark-done:hover   { background: #bbf7d0; }
-        .btn-mark-undone { background: #f1f5f9; color: #475569; }
-        .btn-mark-undone:hover { background: #e2e8f0; }
-        @media (max-width: 720px) {
-          .stats { grid-template-columns: 1fr; }
-        }
-      `}</style>
     </div>
   );
 }

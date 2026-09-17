@@ -1,129 +1,98 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Receipt, PlusCircle, Clock, LayoutList, Users, Settings2, CircleUser, LogOut } from "lucide-react";
+import type { ComponentType } from "react";
+
+function NavLink({
+  href,
+  icon: Icon,
+  label,
+  active,
+}: {
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <Link href={href} className={`nav-link${active ? " active" : ""}`}>
+      <Icon className="size-4" />
+      <span className="hidden sm:inline">{label}</span>
+    </Link>
+  );
+}
 
 export default function Nav({
-  displayName,
+  username,
   isAdmin,
   isTresorier,
 }: {
-  displayName: string;
+  username: string;
   isAdmin: boolean;
   isTresorier: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onDocClick() {
-      setOpen(false);
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("click", onDocClick);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("click", onDocClick);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
+  const pathname = usePathname();
+  const is = (p: string) => pathname === p;
 
   return (
-    <>
-      <header className="site-header">
-        <Link href="/ndf" className="site-logo">
-          Notes de frais
+    <header className="site-header">
+      <div className="max-w-7xl mx-auto flex h-14 items-center gap-3 px-4 sm:px-6">
+        <Link href="/ndf" className="mr-2 flex items-center gap-2 font-semibold text-sm shrink-0 nav-brand">
+          <div className="nav-brand-icon">
+            <Receipt className="size-4" />
+          </div>
+          <span className="hidden sm:inline tracking-tight">Notes de frais</span>
         </Link>
 
-        <nav className="site-nav">
-          <Link href="/ndf">✚ Nouvelle NDF</Link>
-          <Link href="/ndf/history">Historique</Link>
-
-          <div className={`dropdown${open ? " open" : ""}`} ref={ref}>
-            <button
-              className="dropdown-btn"
-              aria-haspopup="true"
-              aria-expanded={open}
-              onClick={(e) => {
-                e.stopPropagation();
-                setOpen((v) => !v);
-              }}
-            >
-              {displayName} <span style={{ fontSize: ".65rem", opacity: 0.7 }}>▾</span>
-            </button>
-            <div className="dropdown-menu" role="menu">
-              <Link href="/ndf/profile">👤 Mon profil</Link>
-              {(isAdmin || isTresorier) && <div className="dropdown-divider" />}
-              {isAdmin && (
-                <Link href="/ndf/members" className="dm-special">
-                  👥 Gestion des membres
-                </Link>
-              )}
-              {isTresorier && (
-                <Link href="/ndf/admin" className="dm-special">
-                  ⚙ Gestion des NDF
-                </Link>
-              )}
-            </div>
-          </div>
-
-          <Link href="/ndf/logout" className="nav-logout">
-            Déconnexion
-          </Link>
+        <nav className="flex items-center gap-0.5 overflow-x-auto">
+          <NavLink href="/ndf" icon={PlusCircle} label="Nouvelle NDF" active={is("/ndf")} />
+          <NavLink href="/ndf/history" icon={Clock} label="Historique" active={is("/ndf/history")} />
+          {isTresorier && (
+            <NavLink href="/ndf/admin" icon={LayoutList} label="Gestion NDF" active={is("/ndf/admin")} />
+          )}
+          {isAdmin && <NavLink href="/ndf/members" icon={Users} label="Membres" active={is("/ndf/members")} />}
+          {(isAdmin || isTresorier) && (
+            <NavLink href="/ndf/settings" icon={Settings2} label="Paramètres" active={is("/ndf/settings")} />
+          )}
         </nav>
-      </header>
+
+        <div className="ml-auto flex items-center gap-0.5 shrink-0">
+          <Link href="/ndf/profile" className="nav-link">
+            <CircleUser className="size-4" />
+            <span className="hidden sm:inline text-xs font-medium">{username}</span>
+          </Link>
+          <Link href="/ndf/logout" className="nav-link">
+            <LogOut className="size-4" />
+            <span className="hidden md:inline">Déco.</span>
+          </Link>
+        </div>
+      </div>
 
       <style>{`
-        header.site-header {
-          background: #1e3a5f; color: white;
-          padding: 0 28px;
-          display: flex; align-items: center; justify-content: space-between;
-          height: 52px; position: sticky; top: 0; z-index: 200;
-          box-shadow: 0 1px 4px rgba(0,0,0,.25);
+        .site-header {
+          position: sticky; top: 0; z-index: 50; width: 100%;
+          border-bottom: 1px solid var(--border);
+          background: color-mix(in oklch, var(--background) 95%, transparent);
+          backdrop-filter: blur(8px);
         }
-        header.site-header .site-logo {
-          font-size: .95rem; font-weight: 700; color: white;
-          text-decoration: none; white-space: nowrap;
+        .nav-brand { color: var(--foreground); text-decoration: none; }
+        .nav-brand-icon {
+          display: flex; align-items: center; justify-content: center;
+          width: 1.75rem; height: 1.75rem; border-radius: .375rem;
+          background: var(--primary); color: var(--primary-foreground);
         }
-        .site-nav { display: flex; align-items: center; gap: 6px; }
-        .site-nav > a, .site-nav > .dropdown > .dropdown-btn {
-          color: rgba(255,255,255,.82); text-decoration: none; font-size: .83rem;
-          padding: 6px 10px; border-radius: 6px; white-space: nowrap;
+        .nav-link {
+          display: inline-flex; align-items: center; gap: .375rem;
+          padding: .375rem .75rem; border-radius: .375rem;
+          font-size: .875rem; font-weight: 500;
+          color: var(--muted-foreground); text-decoration: none;
           transition: background .15s, color .15s;
-          background: none; border: none; cursor: pointer; font-family: inherit;
-          display: inline-flex; align-items: center; gap: 4px;
         }
-        .site-nav > a:hover,
-        .site-nav > .dropdown > .dropdown-btn:hover {
-          background: rgba(255,255,255,.12); color: white;
-        }
-        .site-nav > a.nav-logout {
-          color: rgba(255,255,255,.6); font-size: .78rem;
-        }
-        .site-nav > a.nav-logout:hover { color: white; background: rgba(255,255,255,.1); }
-
-        .dropdown { position: relative; }
-        .dropdown-menu {
-          display: none; position: absolute; right: 0; top: calc(100% + 6px);
-          background: white; border-radius: 8px; min-width: 196px;
-          box-shadow: 0 4px 20px rgba(0,0,0,.18); overflow: hidden; z-index: 300;
-        }
-        .dropdown.open .dropdown-menu { display: block; }
-        .dropdown-menu a {
-          display: flex; align-items: center; gap: 8px;
-          padding: 11px 16px; color: #1e293b; text-decoration: none;
-          font-size: .87rem; transition: background .12s;
-        }
-        .dropdown-menu a:hover { background: #f1f5f9; }
-        .dropdown-menu a.dm-special {
-          color: #1e3a5f; font-weight: 600;
-        }
-        .dropdown-divider {
-          height: 1px; background: #e2e8f0; margin: 4px 0;
-        }
+        .nav-link:hover { color: var(--foreground); background: var(--accent); }
+        .nav-link.active { background: var(--accent); color: var(--foreground); }
       `}</style>
-    </>
+    </header>
   );
 }

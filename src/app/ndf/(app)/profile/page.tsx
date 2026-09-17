@@ -34,143 +34,123 @@ export default async function ProfilePage({
   }
 
   return (
-    <div className="container-narrow">
+    <div className="page-sm">
       {firstLogin && (
-        <div className="welcome-banner">
-          <h2>Bienvenue ! Complétez votre profil</h2>
-          <p>
-            Renseignez vos coordonnées pour qu&apos;elles soient pré-remplies dans vos notes de frais et incluses
-            dans les archives ZIP.
+        <div className="rounded-lg mb-6 p-5" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+          <h2 className="font-semibold text-base mb-1">Bienvenue ! Complétez votre profil</h2>
+          <p className="text-sm" style={{ opacity: 0.85 }}>
+            Renseignez vos coordonnées pour pré-remplir vos notes de frais.
           </p>
         </div>
       )}
 
-      {success && <div className="alert alert-success">✓ Profil mis à jour avec succès.</div>}
+      {success && <div className="alert alert-success mb-4">✓ Profil mis à jour.</div>}
 
       {/* Profil */}
-      <div className="card">
-        <div className="section-title">Informations personnelles</div>
-        <form action={updateProfileAction}>
-          <div className="form-row">
-            <div>
-              <label>Prénom</label>
-              <input type="text" name="prenom" defaultValue={user.prenom} />
+      <div className="card mb-6">
+        <div className="card-header">
+          <div className="card-title">Informations personnelles</div>
+        </div>
+        <div className="card-body">
+          <form action={updateProfileAction} className="field-group">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label className="field-label">Prénom</label>
+                <input className="input" type="text" name="prenom" defaultValue={user.prenom} />
+              </div>
+              <div className="field">
+                <label className="field-label">Nom</label>
+                <input className="input" type="text" name="nom" defaultValue={user.nom} />
+              </div>
             </div>
-            <div>
-              <label>Nom</label>
-              <input type="text" name="nom" defaultValue={user.nom} />
+            <div className="field">
+              <label className="field-label">Email</label>
+              <input className="input" type="email" name="email" defaultValue={user.email} />
             </div>
-          </div>
-          <div className="form-row full">
-            <div>
-              <label>Email</label>
-              <input type="email" name="email" defaultValue={user.email} />
+            <div className="field">
+              <label className="field-label">Adresse postale</label>
+              <textarea className="input" name="adresse" rows={2} defaultValue={user.adresse} />
             </div>
-          </div>
-          <div className="form-row full">
-            <div>
-              <label>Adresse postale</label>
-              <textarea name="adresse" defaultValue={user.adresse} />
-            </div>
-          </div>
-          <div className="form-row full">
-            <div>
-              <label>IBAN (pour virement)</label>
+            <div className="field">
+              <label className="field-label">IBAN (pour virement)</label>
               <IbanInput defaultValue={ibanFormat(user.iban)} />
-              <p className="iban-hint">L&apos;IBAN sera inclus dans les archives ZIP et dans le PDF (paiement par virement).</p>
+              <p className="field-description">Inclus dans les archives ZIP et dans le PDF (virement).</p>
             </div>
-          </div>
-          <button type="submit" className="btn">
-            Enregistrer le profil
-          </button>
-        </form>
+            <button type="submit" className="btn btn-primary">
+              Enregistrer le profil
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Signature */}
-      <div className="card">
-        <div className="section-title">Signature enregistrée</div>
+      <div className="card mb-6">
+        <div className="card-header">
+          <div className="card-title">Signature enregistrée</div>
+        </div>
+        <div className="card-body field-group">
+          {sigOk && <div className="alert alert-success">✓ Signature mise à jour.</div>}
+          {sigError && <div className="alert alert-error">⚠ {sigError}</div>}
 
-        {sigOk && <div className="alert alert-success">✓ Signature mise à jour.</div>}
-        {sigError && <div className="alert alert-error">⚠ {sigError}</div>}
-
-        {sigDataUrl && (
-          <div className="sig-preview">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={sigDataUrl} alt="Signature enregistrée" />
-          </div>
-        )}
-
-        <form action={updateSignatureAction}>
-          <div className="form-row full" style={{ marginBottom: 14 }}>
-            <div>
-              <label>{sigDataUrl ? "Remplacer la signature" : "Importer une signature"}</label>
-              <input type="file" name="sig_img" accept="image/jpeg,image/png,image/gif,image/webp" />
-              <p className="sig-hint">
-                Fichier image (JPG, PNG) sur fond blanc. Elle sera pré-chargée dans le formulaire NDF.
-              </p>
+          {sigDataUrl && (
+            <div className="rounded-lg p-4 text-center" style={{ border: "1px solid var(--border)", background: "var(--muted)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={sigDataUrl} alt="Signature" className="mx-auto object-contain" style={{ maxHeight: 80 }} />
             </div>
-          </div>
-          <div className="btn-row">
-            <button type="submit" className="btn">
-              Enregistrer la signature
-            </button>
-          </div>
-        </form>
+          )}
 
-        {sigDataUrl && (
-          <ConfirmForm
-            action={updateSignatureAction}
-            confirmMessage="Supprimer la signature enregistrée ?"
-            style={{ marginTop: 10 }}
-          >
-            <input type="hidden" name="delete_sig" value="1" />
-            <button type="submit" className="btn btn-danger">
-              Supprimer la signature
-            </button>
-          </ConfirmForm>
-        )}
+          <form action={updateSignatureAction} className="field-group" style={{ gap: ".75rem" }}>
+            <div className="field">
+              <label className="field-label">{sigDataUrl ? "Remplacer la signature" : "Importer une signature"}</label>
+              <input className="input" type="file" name="sig_img" accept="image/jpeg,image/png,image/gif,image/webp" />
+              <p className="field-description">Image sur fond blanc, JPG ou PNG. Elle sera pré-chargée dans le formulaire NDF.</p>
+            </div>
+            <div className="flex gap-3">
+              <button type="submit" className="btn btn-primary btn-sm">
+                Enregistrer
+              </button>
+              {sigDataUrl && (
+                <ConfirmForm action={updateSignatureAction} confirmMessage="Supprimer la signature enregistrée ?">
+                  <input type="hidden" name="delete_sig" value="1" />
+                  <button type="submit" className="btn btn-destructive btn-sm">
+                    Supprimer
+                  </button>
+                </ConfirmForm>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Mot de passe */}
       <div className="card">
-        <div className="section-title">Changer le mot de passe</div>
-        {pwError && <div className="alert alert-error">⚠ {pwError}</div>}
-        {pwOk && <div className="alert alert-success">✓ Mot de passe modifié.</div>}
-        <form action={changePasswordAction}>
-          <div className="form-row full">
-            <div>
-              <label>Ancien mot de passe</label>
-              <input type="password" name="old_pwd" />
+        <div className="card-header">
+          <div className="card-title">Changer le mot de passe</div>
+        </div>
+        <div className="card-body field-group">
+          {pwError && <div className="alert alert-error">⚠ {pwError}</div>}
+          {pwOk && <div className="alert alert-success">✓ Mot de passe modifié.</div>}
+          <form action={changePasswordAction} className="field-group">
+            <div className="field">
+              <label className="field-label">Ancien mot de passe</label>
+              <input className="input" type="password" name="old_pwd" />
             </div>
-          </div>
-          <div className="form-row">
-            <div>
-              <label>Nouveau mot de passe</label>
-              <input type="password" name="new_pwd" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="field">
+                <label className="field-label">Nouveau</label>
+                <input className="input" type="password" name="new_pwd" />
+              </div>
+              <div className="field">
+                <label className="field-label">Confirmer</label>
+                <input className="input" type="password" name="new_pwd2" />
+              </div>
             </div>
-            <div>
-              <label>Confirmer</label>
-              <input type="password" name="new_pwd2" />
-            </div>
-          </div>
-          <button type="submit" className="btn">
-            Changer le mot de passe
-          </button>
-        </form>
+            <button type="submit" className="btn btn-primary btn-sm">
+              Changer le mot de passe
+            </button>
+          </form>
+        </div>
       </div>
-
-      <style>{`
-        .welcome-banner { background: linear-gradient(135deg, #1e3a5f, #2d5087);
-                          color: white; border-radius: 10px; padding: 24px 28px; margin-bottom: 24px; }
-        .welcome-banner h2 { font-size: 1.1rem; margin-bottom: 6px; }
-        .welcome-banner p  { font-size: .85rem; opacity: .85; }
-        .iban-input { font-family: 'Courier New', monospace; letter-spacing: .05em; }
-        .iban-hint { font-size: .75rem; color: #94a3b8; margin-top: 4px; }
-        .sig-preview { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;
-                       background: white; margin-bottom: 14px; text-align: center; padding: 8px; }
-        .sig-preview img { max-height: 100px; max-width: 100%; object-fit: contain; }
-        .sig-hint { font-size: .75rem; color: #94a3b8; margin-top: 4px; }
-      `}</style>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireUser } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { formatMontant } from "@/lib/ndf/format";
@@ -8,11 +7,12 @@ import { deleteSubmissionAction } from "./actions";
 export default async function HistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ deleted?: string }>;
+  searchParams: Promise<{ deleted?: string; draft_saved?: string }>;
 }) {
   const user = await requireUser();
   const sp = await searchParams;
   const deleted = sp.deleted !== undefined;
+  const draftSaved = sp.draft_saved !== undefined;
 
   const submissions = await prisma.submission.findMany({
     where: { userId: user.id },
@@ -32,39 +32,62 @@ export default async function HistoryPage({
   }));
 
   const total = rows.reduce((sum, r) => sum + r.total, 0);
+  const nbDraft = rows.filter((r) => r.status === "draft").length;
   const nbPend = rows.filter((r) => r.status === "created").length;
-  const nbDone = rows.length - nbPend;
+  const nbDone = rows.length - nbPend - nbDraft;
 
   return (
-    <div className="container-wide">
-      {deleted && <div className="alert alert-success">✓ Note de frais supprimée.</div>}
+    <div className="page">
+      {deleted && <div className="alert alert-success mb-4">✓ Note de frais supprimée.</div>}
+      {draftSaved && (
+        <div className="alert alert-info mb-4">💾 Brouillon enregistré — modifiez-le ou soumettez-le quand vous êtes prêt.</div>
+      )}
 
       {rows.length > 0 && (
-        <div className="summary">
-          <div className="sum-chip">
-            {rows.length} note(s) — total <strong>{formatMontant(total)}</strong>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="card stat-card card-body">
+            <div className="stat-label">Total</div>
+            <div className="stat-value" style={{ fontSize: "1.125rem" }}>
+              {formatMontant(total)}
+            </div>
+            <div className="stat-sub">{rows.length} note(s)</div>
           </div>
-          <div className="sum-chip">
-            ⏳ En attente : <strong>{nbPend}</strong>
+          {nbDraft > 0 && (
+            <div className="card stat-card card-body">
+              <div className="stat-label">Brouillons</div>
+              <div className="stat-value">{nbDraft}</div>
+              <div className="stat-sub" style={{ color: "#854d0e" }}>
+                à compléter
+              </div>
+            </div>
+          )}
+          <div className="card stat-card card-body">
+            <div className="stat-label">En attente</div>
+            <div className="stat-value">{nbPend}</div>
+            <div className="stat-sub">soumises</div>
           </div>
-          <div className="sum-chip">
-            ✓ Traitées : <strong>{nbDone}</strong>
+          <div className="card stat-card card-body">
+            <div className="stat-label">Traitées</div>
+            <div className="stat-value">{nbDone}</div>
+            <div className="stat-sub" style={{ color: "#166534" }}>
+              remboursées
+            </div>
           </div>
         </div>
       )}
 
       <div className="card">
-        <div className="section-title">Mes notes de frais</div>
+        <div className="card-header">
+          <div className="card-title">Mes notes de frais</div>
+        </div>
 
         {rows.length === 0 ? (
-          <div className="empty-state">
-            <div>📂</div>
-            <p>Aucune note enregistrée.</p>
-            <p style={{ marginTop: 10 }}>
-              <Link href="/ndf" style={{ color: "#3b82f6" }}>
-                Créer ma première note de frais →
-              </Link>
-            </p>
+          <div className="card-body text-center py-16" style={{ color: "var(--muted-foreground)" }}>
+            <div className="text-4xl mb-3">📂</div>
+            <p className="mb-4">Aucune note enregistrée.</p>
+            <a href="/ndf" className="btn btn-primary">
+              Créer ma première note de frais
+            </a>
           </div>
         ) : (
           <HistoryTable rows={rows} deleteAction={deleteSubmissionAction} />

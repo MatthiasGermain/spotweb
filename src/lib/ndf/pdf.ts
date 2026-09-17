@@ -13,6 +13,12 @@ export interface NdfProfileInfo {
   iban?: string | null;
 }
 
+export interface NdfAssocInfo {
+  nom: string;
+  adresse?: string | null;
+  email?: string | null;
+}
+
 const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 
@@ -148,6 +154,11 @@ class PdfWriter {
     return this;
   }
 
+  async jpegSize(jpegBytes: Uint8Array): Promise<{ width: number; height: number }> {
+    const img = await this.doc.embedJpg(jpegBytes);
+    return { width: img.width, height: img.height };
+  }
+
   async output(): Promise<Buffer> {
     return Buffer.from(await this.doc.save());
   }
@@ -161,34 +172,73 @@ export async function generateNdfPdf(
   total: number,
   contexte: string,
   paiement: "virement" | "cheque",
-  association: string,
   profile: NdfProfileInfo,
-  signatureJpeg: Uint8Array | null
+  signatureJpeg: Uint8Array | null,
+  assoc: NdfAssocInfo,
+  logoJpeg: Uint8Array | null
 ): Promise<Buffer> {
   const pdf = await PdfWriter.create();
 
   const lm = 40.0;
+  const rm = lm + 515.28;
   const cw = 515.28;
   let y = 45.0;
 
-  // ── En-tête ─────────────────────────────────────────────────────────────
-  pdf.setFont(true, 13);
+  const nomAsso = assoc.nom.trim() || "Association";
+  const adresseAsso = (assoc.adresse ?? "").trim();
+  const emailAsso = (assoc.email ?? "").trim();
+
+  // ── Logo (coin supérieur droit) ────────────────────────────────────────
+  let logoW = 0;
+  let logoH = 0;
+  if (logoJpeg && logoJpeg.length > 0) {
+    const info = await pdf.jpegSize(logoJpeg);
+    if (info.width > 0 && info.height > 0) {
+      const scale = Math.min(120.0 / info.width, 55.0 / info.height);
+      logoW = Math.round(info.width * scale * 10) / 10;
+      logoH = Math.round(info.height * scale * 10) / 10;
+    }
+  }
+  const pad = 8.0;
+  const logoBoxW = logoJpeg ? logoW + pad * 2 + 12 : 0;
+  const textZoneW = cw - logoBoxW;
+  const adresseLines =
+    adresseAsso !== ""
+      ? adresseAsso
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean)
+      : [];
+  const headerH = Math.max(14 + 14 + adresseLines.length * 9, logoH + pad * 2) + 6.0;
+
+  if (logoJpeg) {
+    const bx = rm - logoW - pad;
+    const bw = logoW + pad * 2;
+    pdf.fillRect(bx, y, bw, headerH, 0.97, 0.97, 0.97);
+    pdf.rect(bx, y, bw, headerH, 0.5);
+    await pdf.addJpegImage(logoJpeg, bx + pad, y + (headerH - logoH) / 2, logoW, logoH);
+  }
+
+  pdf.setFont(true, 12);
   const title = "NOTE DE FRAIS / JUSTIFICATIF DE DÉPENSES";
   const titleW = pdf.tw(title);
-  pdf.text(lm + (cw - titleW) / 2, y, title);
-  y += 20;
+  pdf.text(lm + Math.max(0, (textZoneW - titleW) / 2), y + 13, title);
 
-  pdf.setFont(true, 10);
-  pdf.text(lm, y, "Association : " + association);
+  let y2 = y + 29;
+  pdf.setFont(true, 9.5);
+  pdf.text(lm, y2, nomAsso);
+  pdf.setFont(false, 7.5);
+  const refStr = "Réf : " + id;
+  pdf.text(lm + textZoneW - pdf.tw(refStr), y2, refStr);
+  y2 += 11;
+  for (const l of adresseLines) {
+    pdf.text(lm, y2, l);
+    y2 += 9;
+  }
 
-  pdf.setFont(false, 8);
-  const refLine = "Réf : " + id;
-  const rm = lm + cw;
-  pdf.text(rm - pdf.tw(refLine), y, refLine);
-  y += 6;
-
+  y += headerH + 4;
   pdf.hline(lm, y, cw, 1.2);
-  y += 12;
+  y += 16;
 
   // ── Section 1 : Infos bénéficiaire ─────────────────────────────────────
   pdf.setFont(true, 10);
@@ -222,12 +272,11 @@ export async function generateNdfPdf(
   pdf.text(lm + 5, y, "Période concernée :");
   pdf.setFont(true, 10);
   pdf.text(lm + 105, y, periode);
-  y += 10;
-
-  pdf.hline(lm, y, cw, 0.5);
-  y += 12;
+  y += 24;
 
   // ── Section 2 : Tableau des dépenses ───────────────────────────────────
+  pdf.hline(lm, y, cw, 0.4);
+  y += 12;
   pdf.setFont(true, 10);
   pdf.text(lm, y, "2. DÉTAIL DES DÉPENSES");
   y += 13;
@@ -271,8 +320,8 @@ export async function generateNdfPdf(
     if (i % 2 === 1) {
       pdf.fillRect(tableX, y, tableW, rowH, 0.96, 0.96, 0.96);
     }
-    const refStr = String(ligne.ref);
-    pdf.text(cols[0].x + (cols[0].w - pdf.tw(refStr)) / 2, y + 12, refStr);
+    const refStr2 = String(ligne.ref);
+    pdf.text(cols[0].x + (cols[0].w - pdf.tw(refStr2)) / 2, y + 12, refStr2);
     pdf.text(cols[1].x + 3, y + 12, ligne.date);
     pdf.textClip(cols[2].x + 3, y + 12, ligne.description, cols[2].w - 6);
     const montStr = formatMontantFr(ligne.montant) + " EUR";
@@ -295,9 +344,11 @@ export async function generateNdfPdf(
   for (let r = 1; r <= lignes.length + 1; r++) {
     pdf.hline(tableX, tableTop + r * rowH, tableW, 0.3);
   }
-  y += 14;
+  y += 24;
 
   // ── Section 3 : Contexte ───────────────────────────────────────────────
+  pdf.hline(lm, y, cw, 0.4);
+  y += 12;
   pdf.setFont(true, 10);
   pdf.text(lm, y, "3. CONTEXTE ET JUSTIFICATION");
   y += 14;
@@ -309,13 +360,12 @@ export async function generateNdfPdf(
   if (contexte.trim() !== "") {
     pdf.setFont(false, 9);
     pdf.multiText(lm + 5, y, contexte, cw - 10, 13);
-  } else {
-    y += 13;
   }
-  pdf.rect(lm, y - 2, cw, 35, 0.5);
-  y += 60;
+  y += 24;
 
   // ── Section 4 : Modalités de paiement ──────────────────────────────────
+  pdf.hline(lm, y, cw, 0.4);
+  y += 12;
   pdf.setFont(true, 10);
   pdf.text(lm, y, "4. MODALITÉS DE PAIEMENT");
   y += 15;
@@ -332,12 +382,11 @@ export async function generateNdfPdf(
   if (paiement === "cheque") pdf.checkboxChecked(lm + 5, y, 10);
   else pdf.checkboxEmpty(lm + 5, y, 10);
   pdf.text(lm + 20, y, "Chèque");
-  y += 10;
-
-  pdf.hline(lm, y, cw, 0.5);
-  y += 28;
+  y += 24;
 
   // ── Section 5 : Signature ──────────────────────────────────────────────
+  pdf.hline(lm, y, cw, 0.4);
+  y += 12;
   pdf.setFont(true, 10);
   pdf.text(lm, y, "5. SIGNATURE ET VALIDATION");
   y += 15;
@@ -353,10 +402,8 @@ export async function generateNdfPdf(
   const sigY = y;
 
   if (signatureJpeg && signatureJpeg.length > 0) {
-    const imgW = 200.0;
-    const imgH = 80.0;
-    await pdf.addJpegImage(signatureJpeg, lm + 110, sigY - 10, imgW, imgH);
-    y = sigY + imgH + 8;
+    await pdf.addJpegImage(signatureJpeg, lm + 110, sigY - 10, 200.0, 80.0);
+    y = sigY + 88;
   } else {
     pdf.hline(lm + 110, sigY + 4, 200, 0.5);
     y = sigY + 30;
@@ -365,8 +412,11 @@ export async function generateNdfPdf(
   // ── Pied de page ────────────────────────────────────────────────────────
   pdf.setFont(false, 7);
   pdf.hline(lm, 810, cw, 0.3);
-  const genStr = now.toLocaleDateString("fr-FR") + " à " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  pdf.text(lm, 820, association + " — Note de frais générée le " + genStr);
+  const genStr =
+    now.toLocaleDateString("fr-FR") + " à " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  let footer = nomAsso + " — Note de frais générée le " + genStr;
+  if (emailAsso !== "") footer += " — Contact : " + emailAsso;
+  pdf.text(lm, 820, footer);
 
   return pdf.output();
 }

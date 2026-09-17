@@ -4,10 +4,11 @@ import sharp from "sharp";
 import { getCurrentUser, getTresorierEmails } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { generateNdfPdf, type NdfLigne } from "@/lib/ndf/pdf";
-import { uploadBlob, fetchBlob } from "@/lib/ndf/blob";
+import { uploadBlob, fetchBlob, deleteBlobs } from "@/lib/ndf/blob";
 import { sendNdfNotification } from "@/lib/ndf/mail";
 import { generateSubmissionId } from "@/lib/ndf/id";
 import { sniffMime, sanitizeFilename } from "@/lib/ndf/files";
+import { ensureDefaultAssociations, getAssociations, getAssociationByNom } from "@/lib/ndf/associations";
 
 const MAX_UPLOAD_B = 10 * 1024 * 1024; // 10 Mo
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
@@ -24,15 +25,22 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
 
+  const actionType = formData.get("action_type") === "draft" ? "draft" : "submit";
+  const editId = String(formData.get("edit_id") ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
+
   const nom = String(formData.get("nom") ?? "").trim();
   const periode = String(formData.get("periode") ?? "").trim();
   const contexte = String(formData.get("contexte") ?? "").trim();
   const paiementRaw = String(formData.get("paiement") ?? "");
   const paiement: "virement" | "cheque" = paiementRaw === "cheque" ? "cheque" : "virement";
+
+  await ensureDefaultAssociations();
+  const assocList = await getAssociations();
   const associationRaw = String(formData.get("association") ?? "");
-  const association = ["Eglise Connexion", "Family Connect"].includes(associationRaw)
+  const association = assocList.some((a) => a.nom === associationRaw)
     ? associationRaw
-    : "Eglise Connexion";
+    : assocList[0]?.nom ?? "Association";
+  const assocConfig = await getAssociationByNom(association);
 
   const errors: string[] = [];
   if (nom === "") errors.push("Le nom et prénom est requis.");
@@ -57,7 +65,7 @@ export async function POST(request: Request) {
 
   if (lignes.length === 0) errors.push("Veuillez saisir au moins une ligne de dépense.");
 
-  // ── Pièces jointes ────────────────────────────────────────────────────────
+  // ── Pièces jointes (nouvelles) ────────────────────────────────────────────
   const pjFiles: { name: string; buffer: Buffer }[] = [];
   for (const entry of formData.getAll("pj[]")) {
     if (!(entry instanceof File) || entry.size === 0) continue;
@@ -101,6 +109,40 @@ export async function POST(request: Request) {
     }
   }
 
+  // ── Récupération des PJ conservées depuis l'ancien brouillon ─────────────
+  let oldSubmission: { id: string; archiveUrl: string } | null = null;
+  const keptPjContents: { name: string; content: Buffer }[] = [];
+  if (editId !== "") {
+    const existing = await prisma.submission.findUnique({ where: { id: editId } });
+    if (existing && existing.userId === user.id && existing.status === "draft") {
+      oldSubmission = { id: existing.id, archiveUrl: existing.archiveUrl };
+      const keptRaw = formData.getAll("kept_pj[]").map(String);
+      if (keptRaw.length > 0) {
+        try {
+          const oldZipBuffer = await fetchBlob(existing.archiveUrl);
+          const oldZip = await JSZip.loadAsync(oldZipBuffer);
+          for (const fname of keptRaw) {
+            const safeName = sanitizeFilename(fname);
+            const entry = oldZip.file(`pj/${safeName}`);
+            if (entry) keptPjContents.push({ name: safeName, content: await entry.async("nodebuffer") });
+          }
+        } catch {
+          // archive introuvable : on ignore simplement les PJ conservées
+        }
+      }
+    }
+  }
+
+  // ── Logo de l'association ─────────────────────────────────────────────────
+  let logoJpeg: Buffer | null = null;
+  if (assocConfig?.logoUrl) {
+    try {
+      logoJpeg = await fetchBlob(assocConfig.logoUrl);
+    } catch {
+      logoJpeg = null;
+    }
+  }
+
   // ── Génération de l'identifiant + PDF ───────────────────────────────────
   const id = generateSubmissionId();
   const pdfBuffer = await generateNdfPdf(
@@ -111,9 +153,10 @@ export async function POST(request: Request) {
     total,
     contexte,
     paiement,
-    association,
     { email: user.email, adresse: user.adresse, iban: user.iban },
-    signatureJpeg
+    signatureJpeg,
+    { nom: association, adresse: assocConfig?.adresse ?? "", email: assocConfig?.email ?? "" },
+    logoJpeg
   );
 
   // ── Construction du ZIP ──────────────────────────────────────────────────
@@ -138,6 +181,10 @@ export async function POST(request: Request) {
   }
 
   const pjNames: string[] = [];
+  for (const kpj of keptPjContents) {
+    zip.file(`pj/${kpj.name}`, kpj.content);
+    pjNames.push(kpj.name);
+  }
   for (const pj of pjFiles) {
     zip.file(`pj/${pj.name}`, pj.buffer);
     pjNames.push(pj.name);
@@ -147,6 +194,12 @@ export async function POST(request: Request) {
 
   // ── Upload de l'archive ──────────────────────────────────────────────────
   const archiveUrl = await uploadBlob(`ndf/users/${user.id}/archives/${id}.zip`, zipBuffer, "application/zip");
+
+  // ── Si on édite un brouillon existant, on le supprime avant d'insérer le nouveau ──
+  if (oldSubmission) {
+    await prisma.submission.delete({ where: { id: oldSubmission.id } });
+    await deleteBlobs([oldSubmission.archiveUrl]);
+  }
 
   // ── Enregistrement en base ───────────────────────────────────────────────
   await prisma.submission.create({
@@ -159,34 +212,41 @@ export async function POST(request: Request) {
       contexte,
       paiement,
       total,
+      status: actionType === "draft" ? "draft" : "created",
       lignes: lignes as unknown as object,
       pjNames: pjNames as unknown as object,
       archiveUrl,
     },
   });
 
-  // ── Notification email ───────────────────────────────────────────────────
-  const recipients = new Set<string>();
-  if (user.email.trim() !== "") recipients.add(user.email.trim());
-  for (const e of await getTresorierEmails()) recipients.add(e);
+  // ── Notification email (uniquement si soumission finale) ────────────────
+  if (actionType !== "draft") {
+    const recipients = new Set<string>();
+    if (user.email.trim() !== "") recipients.add(user.email.trim());
+    for (const e of await getTresorierEmails()) recipients.add(e);
 
-  const prenomDisplay = user.prenom.trim() !== "" ? user.prenom.trim() : nom;
-  try {
-    await sendNdfNotification({
-      recipients: [...recipients],
-      id,
-      nom,
-      prenomDisplay,
-      periode,
-      association,
-      total,
-      paiement,
-      lignes,
-      zipBuffer,
-    });
-  } catch (err) {
-    console.error("Échec de l'envoi de l'email de notification :", err);
+    const prenomDisplay = user.prenom.trim() !== "" ? user.prenom.trim() : nom;
+    try {
+      await sendNdfNotification({
+        recipients: [...recipients],
+        id,
+        nom,
+        prenomDisplay,
+        periode,
+        association,
+        total,
+        paiement,
+        lignes,
+        zipBuffer,
+      });
+    } catch (err) {
+      console.error("Échec de l'envoi de l'email de notification :", err);
+    }
+
+    return redirectHome(request, { success: "1", id });
   }
 
-  return redirectHome(request, { success: "1", id });
+  const url = new URL("/ndf/history", request.url);
+  url.searchParams.set("draft_saved", "1");
+  return NextResponse.redirect(url, 303);
 }

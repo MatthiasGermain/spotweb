@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CirclePlay, CirclePause, Trash2 } from "lucide-react";
 import { formatMontant } from "@/lib/ndf/format";
 
 export interface MemberRow {
@@ -17,9 +18,9 @@ export interface MemberRow {
 }
 
 const ROLE_INFO: Record<MemberRow["role"], { label: string; cls: string }> = {
-  ADMIN: { label: "Admin", cls: "badge-admin" },
-  TRESORIER: { label: "Trésorier", cls: "badge-tresorier" },
-  MEMBER: { label: "Membre", cls: "badge-member" },
+  ADMIN: { label: "Admin", cls: "badge-warning" },
+  TRESORIER: { label: "Trésorier", cls: "badge-purple" },
+  MEMBER: { label: "Membre", cls: "badge-secondary" },
 };
 
 function ibanFormat(iban: string): string {
@@ -64,8 +65,8 @@ export default function MembersTable({
         />
       </div>
 
-      <div className="table-wrap">
-        <table>
+      <div className="overflow-x-auto">
+        <table className="tbl">
           <thead>
             <tr>
               <th>Identifiant</th>
@@ -135,7 +136,7 @@ export default function MembersTable({
                   </td>
                   <td style={{ textAlign: "center" }}>
                     {m.disabled ? (
-                      <span className="badge badge-disabled">Désactivé</span>
+                      <span className="badge badge-error">Désactivé</span>
                     ) : (
                       <span style={{ color: "#22c55e", fontSize: ".82rem", fontWeight: 600 }}>Actif</span>
                     )}
@@ -143,7 +144,7 @@ export default function MembersTable({
                   {isAdmin && (
                     <td>
                       {!isProtected ? (
-                        <div className="actions">
+                        <div className="btn-group">
                           <form
                             action={toggleDisabledAction}
                             onSubmit={(e) => {
@@ -154,16 +155,23 @@ export default function MembersTable({
                                 e.preventDefault();
                               }
                             }}
+                            style={{ display: "contents" }}
                           >
                             <input type="hidden" name="username" value={m.username} />
                             <input type="hidden" name="current_disabled" value={m.disabled ? "1" : "0"} />
                             {m.disabled ? (
-                              <button type="submit" className="btn-enable">
-                                ↺ Réactiver
+                              <button
+                                type="submit"
+                                className="btn btn-outline btn-sm btn-icon"
+                                data-tip="Réactiver le compte"
+                                aria-label="Réactiver"
+                                style={{ color: "oklch(0.38 0.10 152)", borderColor: "oklch(0.90 0.05 152)" }}
+                              >
+                                <CirclePlay className="size-4" />
                               </button>
                             ) : (
-                              <button type="submit" className="btn-disable">
-                                ⏸ Désactiver
+                              <button type="submit" className="btn btn-outline btn-sm btn-icon" data-tip="Désactiver le compte" aria-label="Désactiver">
+                                <CirclePause className="size-4" />
                               </button>
                             )}
                           </form>
@@ -178,15 +186,24 @@ export default function MembersTable({
                                 e.preventDefault();
                               }
                             }}
+                            style={{ display: "contents" }}
                           >
                             <input type="hidden" name="username" value={m.username} />
-                            <button type="submit" className="btn-del">
-                              ✕ Supprimer
+                            <button
+                              type="submit"
+                              className="btn btn-outline btn-sm btn-icon"
+                              data-tip="Supprimer le compte"
+                              aria-label="Supprimer"
+                              style={{ color: "var(--destructive)", borderColor: "oklch(0.92 0.05 25)" }}
+                            >
+                              <Trash2 className="size-4" />
                             </button>
                           </form>
                         </div>
                       ) : (
-                        <span className="protected">protégé</span>
+                        <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                          protégé
+                        </span>
                       )}
                     </td>
                   )}
@@ -198,6 +215,8 @@ export default function MembersTable({
       </div>
 
       <style>{`
+        .user-chip { font-family: monospace; font-size: .82rem; background: var(--muted);
+                     padding: 2px 8px; border-radius: 4px; color: var(--muted-foreground); }
         .search-bar { margin-bottom: 16px; }
         .search-bar input { width: 100%; max-width: 400px; padding: 8px 12px;
                             border: 1px solid #d1d5db; border-radius: 6px;
@@ -209,16 +228,6 @@ export default function MembersTable({
         select.role-select { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 5px;
                              font-size: .78rem; color: #374151; background: white; cursor: pointer; }
         select.role-select:focus { outline: none; border-color: #3b82f6; }
-        .actions { display: flex; gap: 6px; align-items: center; }
-        .btn-disable { background: none; border: 1px solid #d1d5db; border-radius: 6px;
-                       padding: 4px 9px; font-size: .73rem; font-weight: 600;
-                       color: #64748b; cursor: pointer; transition: all .15s; white-space: nowrap; }
-        .btn-disable:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .btn-enable { background: none; border: 1px solid #86efac; border-radius: 6px;
-                      padding: 4px 9px; font-size: .73rem; font-weight: 600;
-                      color: #166534; cursor: pointer; transition: all .15s; white-space: nowrap; }
-        .btn-enable:hover { background: #dcfce7; border-color: #4ade80; }
-        .protected { color: #cbd5e1; font-size: .78rem; }
       `}</style>
     </>
   );

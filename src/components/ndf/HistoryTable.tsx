@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Download, Pencil, Trash2, Clock } from "lucide-react";
 import { formatDateFr, formatMontant } from "@/lib/ndf/format";
 
 export interface HistoryRow {
@@ -56,14 +57,15 @@ export default function HistoryTable({
   });
 
   return (
-    <div className="table-wrap">
-      <table>
+    <div className="overflow-x-auto">
+      <table className="tbl">
         <thead>
           <tr>
             {COLUMNS.map((col) => (
               <th
                 key={col.key}
-                className={`sortable${sortKey === col.key ? (sortDir === 1 ? " sort-asc" : " sort-desc") : ""}`}
+                data-col={col.key}
+                className={sortKey === col.key ? (sortDir === 1 ? "sort-asc" : "sort-desc") : ""}
                 style={col.align === "right" ? { textAlign: "right" } : undefined}
                 onClick={() => toggleSort(col.key)}
               >
@@ -75,61 +77,81 @@ export default function HistoryTable({
         </thead>
         <tbody>
           {sorted.map((sub) => {
-            const assocCls = sub.association.includes("Connexion") ? "badge-assoc-ec" : "badge-assoc-fc";
+            const assocCls = sub.association.includes("Connexion") ? "badge-purple" : "badge-pink";
             return (
               <tr key={sub.id}>
-                <td style={{ fontSize: ".8rem", color: "#64748b" }}>{formatDateFr(sub.createdAt)}</td>
-                <td>
-                  <strong>{sub.nom}</strong>
+                <td className="text-muted-foreground" style={{ fontSize: ".8rem", color: "var(--muted-foreground)" }}>
+                  {formatDateFr(sub.createdAt)}
                 </td>
-                <td className="wrap">{sub.periode}</td>
                 <td>
-                  {sub.association ? (
-                    <span className={`badge ${assocCls}`}>{sub.association}</span>
-                  ) : (
-                    "—"
-                  )}
+                  <span className="font-medium">{sub.nom}</span>
                 </td>
-                <td>{sub.pjCount > 0 ? <span className="badge badge-pj">{sub.pjCount} fich.</span> : "—"}</td>
-                <td style={{ textAlign: "right", fontWeight: 600 }}>{formatMontant(sub.total)}</td>
+                <td>{sub.periode}</td>
+                <td>{sub.association ? <span className={`badge ${assocCls}`}>{sub.association}</span> : "—"}</td>
+                <td>{sub.pjCount > 0 ? <span className="badge badge-blue">{sub.pjCount} fich.</span> : "—"}</td>
+                <td className="font-semibold" style={{ textAlign: "right" }}>
+                  {formatMontant(sub.total)}
+                </td>
                 <td>
                   {sub.paiement === "virement" ? (
-                    <span className="badge badge-vir">Virement</span>
+                    <span className="badge badge-success">Virement</span>
                   ) : (
-                    <span className="badge badge-chq">Chèque</span>
+                    <span className="badge badge-warning">Chèque</span>
                   )}
                 </td>
                 <td>
                   {sub.status === "processed" ? (
-                    <span className="badge" style={{ background: "#dcfce7", color: "#166534" }}>
-                      ✓ Traitée
-                    </span>
+                    <span className="badge badge-success">✓ Traitée</span>
+                  ) : sub.status === "draft" ? (
+                    <span className="badge badge-warning">✏ Brouillon</span>
                   ) : (
-                    <span className="badge" style={{ background: "#f1f5f9", color: "#64748b" }}>
-                      En attente
+                    <span className="badge badge-secondary">
+                      <Clock className="size-3" /> En attente
                     </span>
                   )}
                 </td>
-                <td style={{ textAlign: "right" }}>
-                  <a href={`/ndf/api/download/${encodeURIComponent(sub.id)}`} className="btn-dl">
-                    ⬇ ZIP
-                  </a>
-                  {sub.status === "created" && (
-                    <form
-                      action={deleteAction}
-                      style={{ display: "inline" }}
-                      onSubmit={(e) => {
-                        if (!confirm("Supprimer cette note de frais ? Cette action est irréversible.")) {
-                          e.preventDefault();
-                        }
-                      }}
+                <td>
+                  <div className="btn-group" style={{ justifyContent: "flex-end" }}>
+                    <a
+                      href={`/ndf/api/download/${encodeURIComponent(sub.id)}`}
+                      className="btn btn-outline btn-sm btn-icon"
+                      data-tip="Télécharger l'archive ZIP"
+                      aria-label="Télécharger"
                     >
-                      <input type="hidden" name="id" value={sub.id} />
-                      <button type="submit" className="btn-del" style={{ marginLeft: 6 }}>
-                        ✕ Supprimer
-                      </button>
-                    </form>
-                  )}
+                      <Download className="size-4" />
+                    </a>
+                    {sub.status === "draft" && (
+                      <a
+                        href={`/ndf?edit=${encodeURIComponent(sub.id)}`}
+                        className="btn btn-outline btn-sm btn-icon"
+                        data-tip="Modifier ce brouillon"
+                        aria-label="Modifier"
+                      >
+                        <Pencil className="size-4" />
+                      </a>
+                    )}
+                    {(sub.status === "draft" || sub.status === "created") && (
+                      <form
+                        action={deleteAction}
+                        style={{ display: "contents" }}
+                        onSubmit={(e) => {
+                          const msg = sub.status === "draft" ? "Supprimer ce brouillon ?" : "Supprimer cette note ? Action irréversible.";
+                          if (!confirm(msg)) e.preventDefault();
+                        }}
+                      >
+                        <input type="hidden" name="id" value={sub.id} />
+                        <button
+                          type="submit"
+                          className="btn btn-outline btn-sm btn-icon"
+                          data-tip={sub.status === "draft" ? "Supprimer le brouillon" : "Supprimer"}
+                          aria-label="Supprimer"
+                          style={{ color: "var(--destructive)", borderColor: "oklch(0.92 0.05 25)" }}
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 </td>
               </tr>
             );
