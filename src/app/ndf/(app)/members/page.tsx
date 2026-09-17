@@ -38,61 +38,62 @@ export default async function MembersPage({
   const totalNdf = members.reduce((s, m) => s + m.ndfCount, 0);
 
   return (
-    <div className="container-medium">
-      {sp.ok && <div className="alert alert-success">✓ {sp.ok}</div>}
-      {sp.error && <div className="alert alert-error">⚠ {sp.error}</div>}
+    <div className="page">
+      {sp.ok && <div className="alert alert-success mb-4">✓ {sp.ok}</div>}
+      {sp.error && <div className="alert alert-error mb-4">⚠ {sp.error}</div>}
 
-      <div className="stats">
-        <div className="stat">
-          <div className="stat-label">Membres inscrits</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="card stat-card card-body">
+          <div className="stat-label">Membres</div>
           <div className="stat-value">{totalMembers}</div>
         </div>
-        <div className="stat">
-          <div className="stat-label">Comptes actifs</div>
+        <div className="card stat-card card-body">
+          <div className="stat-label">Actifs</div>
           <div className="stat-value">{activeMembers}</div>
         </div>
-        <div className="stat">
+        <div className="card stat-card card-body">
           <div className="stat-label">Avec IBAN</div>
           <div className="stat-value">{withIban}</div>
         </div>
-        <div className="stat">
-          <div className="stat-label">Notes de frais</div>
+        <div className="card stat-card card-body">
+          <div className="stat-label">Notes NDF</div>
           <div className="stat-value">{totalNdf}</div>
         </div>
       </div>
 
       <div className="card">
-        <div className="section-title">
-          Liste des membres
-          {iAmTresorier && !iAmAdmin && (
-            <span style={{ fontSize: ".75rem", color: "#94a3b8", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>
-              lecture seule
-            </span>
-          )}
+        <div className="card-header flex items-center justify-between gap-4">
+          <div className="card-title">
+            Liste des membres
+            {iAmTresorier && !iAmAdmin && (
+              <span
+                className="badge badge-secondary ml-2"
+                style={{ textTransform: "none", letterSpacing: 0, fontSize: ".7rem" }}
+              >
+                lecture seule
+              </span>
+            )}
+          </div>
         </div>
 
-        {iAmTresorier && !iAmAdmin && <p className="info-note">Vous consultez les fiches membres en lecture seule.</p>}
+        <div className="card-body">
+          {iAmTresorier && !iAmAdmin && (
+            <p className="text-sm mb-3" style={{ color: "var(--muted-foreground)", fontStyle: "italic" }}>
+              Vous consultez les fiches membres en lecture seule.
+            </p>
+          )}
 
-        <MembersTable
-          members={members}
-          meUsername={me.username}
-          isAdmin={iAmAdmin}
-          isTresorier={iAmTresorier}
-          setRoleAction={setRoleAction}
-          toggleDisabledAction={toggleDisabledAction}
-          deleteUserAction={deleteUserAction}
-        />
+          <MembersTable
+            members={members}
+            meUsername={me.username}
+            isAdmin={iAmAdmin}
+            isTresorier={iAmTresorier}
+            setRoleAction={setRoleAction}
+            toggleDisabledAction={toggleDisabledAction}
+            deleteUserAction={deleteUserAction}
+          />
+        </div>
       </div>
-
-      <style>{`
-        .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-        .stat { background: white; border-radius: 10px; padding: 16px 22px;
-                box-shadow: 0 1px 4px rgba(0,0,0,.08); min-width: 140px; }
-        .stat-label { font-size: .72rem; font-weight: 700; letter-spacing: .06em;
-                      text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; }
-        .info-note { font-size: .82rem; color: #64748b; font-style: italic; margin-bottom: 14px; }
-      `}</style>
     </div>
   );
 }

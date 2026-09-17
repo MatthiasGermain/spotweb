@@ -18,9 +18,17 @@ export default async function LoginPage({
 
   return (
     <div className="login-shell">
-      <div className="logo">
-        <h1>Notes de frais</h1>
-        <p>Eglise Connexion &amp; Family Connect</p>
+      <div className="mb-8 text-center">
+        <div
+          className="inline-flex items-center justify-center rounded-lg mb-3"
+          style={{ width: "2.5rem", height: "2.5rem", background: "var(--primary)", color: "var(--primary-foreground)" }}
+        >
+          🧾
+        </div>
+        <h1 className="text-xl font-semibold">Notes de frais</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
+          Gestion des remboursements
+        </p>
       </div>
 
       <div className="card login-card">
@@ -33,71 +41,68 @@ export default async function LoginPage({
           </Link>
         </div>
 
-        {error && <div className="alert alert-error">{error}</div>}
+        <div className="card-body">
+          {error && <div className="alert alert-error mb-4">{error}</div>}
 
-        <form action={mode === "register" ? registerAction : loginAction}>
-          <label>Identifiant</label>
-          <input type="text" name="username" defaultValue={usernameValue} autoComplete="username" required />
+          <form action={mode === "register" ? registerAction : loginAction} className="field-group">
+            <div className="field">
+              <label className="field-label">Identifiant</label>
+              <input className="input" type="text" name="username" defaultValue={usernameValue} autoComplete="username" required />
+            </div>
 
-          <label>Mot de passe</label>
-          <input
-            type="password"
-            name="password"
-            autoComplete={mode === "register" ? "new-password" : "current-password"}
-            required
-          />
+            <div className="field">
+              <label className="field-label">Mot de passe</label>
+              <input
+                className="input"
+                type="password"
+                name="password"
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                required
+              />
+            </div>
 
-          {mode === "register" && (
-            <>
-              <label>Confirmer le mot de passe</label>
-              <input type="password" name="confirm" autoComplete="new-password" required />
-            </>
+            {mode === "register" && (
+              <div className="field">
+                <label className="field-label">Confirmer le mot de passe</label>
+                <input className="input" type="password" name="confirm" autoComplete="new-password" required />
+              </div>
+            )}
+
+            <button type="submit" className="btn btn-primary btn-lg w-full">
+              {mode === "register" ? "Créer mon compte" : "Se connecter"}
+            </button>
+          </form>
+
+          {mode !== "register" && (
+            <p className="mt-4 text-center text-sm" style={{ color: "var(--muted-foreground)" }}>
+              Première fois ?{" "}
+              <Link href="/ndf/login?mode=register" style={{ color: "var(--primary)", fontWeight: 500 }}>
+                Créez votre compte
+              </Link>
+            </p>
           )}
-
-          <button type="submit" className="btn" style={{ width: "100%", marginTop: 4 }}>
-            {mode === "register" ? "Créer mon compte" : "Se connecter"}
-          </button>
-        </form>
-
-        {mode !== "register" && (
-          <p className="hint">
-            Première fois ?{" "}
-            <Link href="/ndf/login?mode=register" style={{ color: "#3b82f6" }}>
-              Créez votre compte
-            </Link>
-          </p>
-        )}
+        </div>
       </div>
 
       <style>{`
         .login-shell {
-          min-height: 100vh;
+          min-height: 100dvh;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           padding: 24px;
         }
-        .logo { text-align: center; margin-bottom: 28px; }
-        .logo h1 { font-size: 1.4rem; color: #1e3a5f; font-weight: 700; }
-        .logo p { font-size: .82rem; color: #64748b; margin-top: 4px; }
-
-        .login-card { width: 100%; max-width: 420px; padding: 36px 40px; margin-bottom: 0; }
-
-        .tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 28px; }
+        .login-card { width: 100%; max-width: 24rem; margin-bottom: 0; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border); }
         .tab {
-          flex: 1; text-align: center; padding: 10px;
-          font-size: .88rem; font-weight: 600; color: #64748b;
+          flex: 1; text-align: center; padding: .75rem;
+          font-size: .875rem; font-weight: 500; color: var(--muted-foreground);
           cursor: pointer; text-decoration: none;
-          border-bottom: 2px solid transparent; margin-bottom: -2px;
+          border-bottom: 2px solid transparent; margin-bottom: -1px;
           transition: color .15s, border-color .15s;
         }
-        .tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
-
-        .login-card label { margin-bottom: 5px; }
-        .login-card input { margin-bottom: 16px; }
-
-        .hint { font-size: .78rem; color: #94a3b8; text-align: center; margin-top: 16px; }
+        .tab.active { color: var(--foreground); border-bottom-color: var(--primary); }
       `}</style>
     </div>
   );

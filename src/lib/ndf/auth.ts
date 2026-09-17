@@ -54,9 +54,14 @@ async function getSessionUserId(): Promise<string | null> {
 export async function getCurrentUser(): Promise<User | null> {
   const uid = await getSessionUserId();
   if (!uid) return null;
-  const user = await prisma.user.findUnique({ where: { id: uid } });
-  if (!user || user.disabled) return null;
-  return user;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: uid } });
+    if (!user || user.disabled) return null;
+    return user;
+  } catch (err) {
+    console.error("getCurrentUser: échec de la lecture en base", err);
+    return null;
+  }
 }
 
 /** À appeler en haut d'une Server Component protégée : redirige vers /login sinon. */

@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import SignaturePad from "signature_pad";
+import { Plus, X, Paperclip, EraserIcon, RotateCcw, Save, ArrowRight, PenLine } from "lucide-react";
+import ShadSelect from "./ShadSelect";
+import FlatpickrDateInput from "./FlatpickrDateInput";
+import { frMonths, selectYears, combinePeriode } from "@/lib/ndf/periode";
 
 interface Row {
   key: number;
@@ -10,38 +14,70 @@ interface Row {
   montant: string;
 }
 
+export interface DraftData {
+  id: string;
+  nom: string;
+  month: string;
+  year: string;
+  association: string;
+  contexte: string;
+  paiement: "virement" | "cheque";
+  lignes: { date: string; description: string; montant: number }[];
+  pj: string[];
+}
+
 function formatTotal(t: number): string {
   return (
     t
       .toFixed(2)
       .replace(".", ",")
-      .replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €"
+      .replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €"
   );
 }
 
 let keySeq = 1;
-function mkRow(): Row {
-  return { key: keySeq++, date: "", description: "", montant: "" };
+function mkRow(init?: Partial<Row>): Row {
+  return { key: keySeq++, date: init?.date ?? "", description: init?.description ?? "", montant: init?.montant ?? "" };
 }
 
 export default function NdfForm({
   prefillNom,
   savedSigDataUrl,
+  associations,
+  draft,
 }: {
   prefillNom: string;
   savedSigDataUrl: string | null;
+  associations: { nom: string }[];
+  draft: DraftData | null;
 }) {
-  const [rows, setRows] = useState<Row[]>(() => [mkRow(), mkRow(), mkRow()]);
-  const [fileNames, setFileNames] = useState<{ name: string; size: number }[]>([]);
+  const [rows, setRows] = useState<Row[]>(() =>
+    draft && draft.lignes.length > 0
+      ? draft.lignes.map((l) => mkRow({ date: l.date, description: l.description, montant: String(l.montant) }))
+      : [mkRow(), mkRow(), mkRow()]
+  );
+  const [keptPj, setKeptPj] = useState<string[]>(draft?.pj ?? []);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const [month, setMonth] = useState(draft?.month ?? "");
+  const [year, setYear] = useState(draft?.year ?? String(new Date().getFullYear()));
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const actionTypeRef = useRef<HTMLInputElement>(null);
+  const periodeRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const padRef = useRef<SignaturePad | null>(null);
   const sigInputRef = useRef<HTMLInputElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
-  const clearedRef = useRef(false);
-  const [clearBtnLabel, setClearBtnLabel] = useState("✕ Effacer");
+  const [isCleared, setIsCleared] = useState(false);
 
   const hasSavedSig = !!savedSigDataUrl;
+
+  useEffect(() => {
+    if (periodeRef.current) periodeRef.current.value = combinePeriode(month, year);
+  }, [month, year]);
 
   function addRow() {
     setRows((prev) => [...prev, mkRow()]);
@@ -55,6 +91,14 @@ export default function NdfForm({
 
   const total = rows.reduce((sum, r) => sum + (parseFloat(r.montant.replace(",", ".")) || 0), 0);
 
+  // ── Fichiers ────────────────────────────────────────────────────────────
+  function addFiles(files: FileList | File[]) {
+    setNewFiles((prev) => [...prev, ...Array.from(files)]);
+  }
+  function removeNewFile(idx: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   // ── Signature pad ─────────────────────────────────────────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -67,12 +111,12 @@ export default function NdfForm({
       const img = new Image();
       img.onload = () => {
         const ctx = canvas!.getContext("2d");
-        const w = parseInt(canvas!.style.width) || 820;
+        const w = parseInt(canvas!.style.width) || 640;
         if (!ctx) return;
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, w, 160);
         ctx.drawImage(img, 0, 0, w, 160);
-        placeholderRef.current?.classList.add("hidden");
+        if (placeholderRef.current) placeholderRef.current.style.display = "none";
       };
       img.src = savedSigDataUrl;
     }
@@ -80,10 +124,10 @@ export default function NdfForm({
     function resizeCanvas() {
       if (!canvas) return;
       const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      const rect = canvas.parentElement!.getBoundingClientRect();
-      canvas.width = rect.width * ratio;
+      const w = canvas.parentElement!.getBoundingClientRect().width;
+      canvas.width = w * ratio;
       canvas.height = 160 * ratio;
-      canvas.style.width = rect.width + "px";
+      canvas.style.width = w + "px";
       canvas.style.height = "160px";
       canvas.getContext("2d")?.scale(ratio, ratio);
       pad.clear();
@@ -91,14 +135,12 @@ export default function NdfForm({
     }
 
     resizeCanvas();
-    if (hasSavedSig && sigInputRef.current) {
-      sigInputRef.current.value = savedSigDataUrl!;
-    }
+    if (hasSavedSig && sigInputRef.current) sigInputRef.current.value = savedSigDataUrl!;
     window.addEventListener("resize", resizeCanvas);
 
     pad.addEventListener("endStroke", () => {
       if (sigInputRef.current) sigInputRef.current.value = canvas.toDataURL("image/png");
-      placeholderRef.current?.classList.add("hidden");
+      if (placeholderRef.current) placeholderRef.current.style.display = "none";
     });
 
     return () => {
@@ -113,273 +155,354 @@ export default function NdfForm({
     const canvas = canvasRef.current;
     if (!pad || !canvas) return;
 
-    if (clearedRef.current) {
-      // Restaurer la signature enregistrée
+    if (isCleared) {
       if (hasSavedSig && savedSigDataUrl) {
         const img = new Image();
         img.onload = () => {
           const ctx = canvas.getContext("2d");
-          const w = parseInt(canvas.style.width) || 820;
+          const w = parseInt(canvas.style.width) || 640;
           if (!ctx) return;
           ctx.fillStyle = "white";
           ctx.fillRect(0, 0, w, 160);
           ctx.drawImage(img, 0, 0, w, 160);
-          placeholderRef.current?.classList.add("hidden");
+          if (placeholderRef.current) placeholderRef.current.style.display = "none";
         };
         img.src = savedSigDataUrl;
         if (sigInputRef.current) sigInputRef.current.value = savedSigDataUrl;
       }
       pad.clear();
-      clearedRef.current = false;
-      setClearBtnLabel("✕ Effacer");
+      setIsCleared(false);
     } else {
       pad.clear();
       if (sigInputRef.current) sigInputRef.current.value = "";
-      placeholderRef.current?.classList.remove("hidden");
-      if (hasSavedSig) {
-        clearedRef.current = true;
-        setClearBtnLabel("↺ Restaurer ma signature");
-      }
+      if (placeholderRef.current) placeholderRef.current.style.display = "";
+      if (hasSavedSig) setIsCleared(true);
     }
   }
 
+  function submitAs(type: "draft" | "submit") {
+    if (!periodeRef.current?.value.trim()) {
+      alert("Veuillez sélectionner un mois et une année.");
+      return;
+    }
+    const assocHidden = formRef.current?.querySelector<HTMLInputElement>('input[name="association"]');
+    if (type === "submit" && assocHidden && !assocHidden.value) {
+      alert("Veuillez choisir une association.");
+      return;
+    }
+    if (actionTypeRef.current) actionTypeRef.current.value = type;
+
+    // Injecte les fichiers sélectionnés dans le vrai input[type=file] via DataTransfer
+    if (fileInputRef.current) {
+      const dt = new DataTransfer();
+      newFiles.forEach((f) => dt.items.add(f));
+      fileInputRef.current.files = dt.files;
+    }
+
+    formRef.current?.requestSubmit();
+  }
+
   return (
-    <form method="POST" action="/ndf/api/submit" encType="multipart/form-data" id="ndf-form">
-      {/* Section 1 */}
-      <div className="card">
-        <div className="section-title">1. Informations sur le bénéficiaire</div>
-        <div className="form-row thirds">
-          <div>
-            <label>
-              Nom et Prénom <span className="req">*</span>
+    <form ref={formRef} action="/ndf/api/submit" method="POST" encType="multipart/form-data">
+      <input type="hidden" name="action_type" ref={actionTypeRef} defaultValue="submit" />
+      {draft && <input type="hidden" name="edit_id" value={draft.id} />}
+
+      {/* 1. Informations bénéficiaire */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <div className="card-title">1. Informations sur le bénéficiaire</div>
+        </div>
+        <div className="card-body field-group">
+          <div className="field">
+            <label className="field-label">
+              Nom et prénom <span className="req">*</span>
             </label>
-            <input type="text" name="nom" defaultValue={prefillNom} required />
+            <input className="input" type="text" name="nom" defaultValue={prefillNom} required />
           </div>
-          <div>
-            <label>
-              Période concernée <span className="req">*</span>
-            </label>
-            <input type="text" name="periode" placeholder="ex : Août 2026" required />
-          </div>
-          <div>
-            <label>
-              Association <span className="req">*</span>
-            </label>
-            <select name="association">
-              <option value="Eglise Connexion">Eglise Connexion</option>
-              <option value="Family Connect">Family Connect</option>
-            </select>
+
+          <div className="flex flex-col gap-4">
+            <div className="field">
+              <label className="field-label">
+                Période <span className="req">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="field">
+                  <label className="field-label text-xs font-normal" style={{ color: "var(--muted-foreground)" }}>
+                    Mois
+                  </label>
+                  <ShadSelect name="periode_month" options={frMonths()} defaultValue={month} placeholder="MM" onValueChange={setMonth} />
+                </div>
+                <div className="field">
+                  <label className="field-label text-xs font-normal" style={{ color: "var(--muted-foreground)" }}>
+                    Année
+                  </label>
+                  <ShadSelect name="periode_year" options={selectYears()} defaultValue={year} placeholder="AAAA" onValueChange={setYear} />
+                </div>
+              </div>
+              <input type="hidden" name="periode" ref={periodeRef} defaultValue={combinePeriode(month, year)} />
+            </div>
+
+            <div className="field">
+              <label className="field-label">
+                Association <span className="req">*</span>
+              </label>
+              <ShadSelect
+                name="association"
+                options={associations.map((a) => ({ value: a.nom, label: a.nom }))}
+                defaultValue={draft?.association ?? associations[0]?.nom ?? ""}
+                placeholder="Choisir…"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Section 2 : Dépenses */}
-      <div className="card">
-        <div className="section-title">2. Détail des dépenses</div>
-        <table className="expenses-table">
-          <thead>
-            <tr>
-              <th className="center" style={{ width: 42 }}>
-                Réf
-              </th>
-              <th style={{ width: 130 }}>Date</th>
-              <th>Description de l&apos;achat / Objet</th>
-              <th className="right" style={{ width: 125 }}>
-                Montant TTC (€)
-              </th>
-              <th style={{ width: 42 }} />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.key}>
-                <td className="ref-cell">{i + 1}</td>
-                <td>
-                  <input
-                    type="date"
-                    name="date_dep[]"
-                    value={row.date}
-                    onChange={(e) => updateRow(row.key, "date", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    name="description[]"
-                    placeholder="Description…"
-                    value={row.description}
-                    onChange={(e) => updateRow(row.key, "description", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    name="montant[]"
-                    step="0.01"
-                    min="0"
-                    placeholder="0,00"
-                    value={row.montant}
-                    onChange={(e) => updateRow(row.key, "montant", e.target.value)}
-                  />
-                  <input type="hidden" name="ref[]" value={i + 1} />
-                </td>
-                <td>
-                  <button type="button" className="btn-del-row" onClick={() => removeRow(row.key)}>
-                    ✕
-                  </button>
-                </td>
+      {/* 2. Dépenses */}
+      <div className="card mb-4">
+        <div className="card-header flex items-center justify-between gap-3">
+          <div className="card-title">2. Détail des dépenses</div>
+          <button type="button" className="btn btn-outline btn-sm" onClick={addRow}>
+            <Plus className="size-3.5" />
+            Ligne
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--muted)" }}>
+                <th className="text-center text-xs font-medium py-2 px-2 w-10" style={{ color: "var(--muted-foreground)" }}>
+                  #
+                </th>
+                <th className="text-left text-xs font-medium py-2 px-2 w-36" style={{ color: "var(--muted-foreground)" }}>
+                  Date
+                </th>
+                <th className="text-left text-xs font-medium py-2 px-2" style={{ color: "var(--muted-foreground)" }}>
+                  Description
+                </th>
+                <th className="text-right text-xs font-medium py-2 px-2 w-28" style={{ color: "var(--muted-foreground)" }}>
+                  Montant TTC
+                </th>
+                <th className="w-8" />
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <button type="button" className="btn-add-row" onClick={addRow}>
-          ＋ Ajouter une ligne
-        </button>
-        <div className="total-bar">
-          Total à rembourser : <strong>{formatTotal(total)}</strong>
+            </thead>
+            <tbody>
+              {rows.map((row, i) => (
+                <tr key={row.key} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <td className="expense-td-ref">{i + 1}</td>
+                  <td style={{ borderLeft: "1px solid var(--border)", padding: 0 }}>
+                    <FlatpickrDateInput name="date_dep[]" defaultValue={row.date} className="expense-input" />
+                    <input type="hidden" name="ref[]" value={i + 1} />
+                  </td>
+                  <td style={{ borderLeft: "1px solid var(--border)", padding: 0 }}>
+                    <input
+                      type="text"
+                      name="description[]"
+                      className="expense-input"
+                      placeholder="Description de la dépense…"
+                      value={row.description}
+                      onChange={(e) => updateRow(row.key, "description", e.target.value)}
+                    />
+                  </td>
+                  <td style={{ borderLeft: "1px solid var(--border)", padding: 0 }}>
+                    <input
+                      type="number"
+                      name="montant[]"
+                      className="expense-input"
+                      step="0.01"
+                      min="0"
+                      placeholder="0,00"
+                      value={row.montant}
+                      onChange={(e) => updateRow(row.key, "montant", e.target.value)}
+                    />
+                  </td>
+                  <td style={{ borderLeft: "1px solid var(--border)", textAlign: "center", padding: ".25rem" }}>
+                    <button
+                      type="button"
+                      onClick={() => removeRow(row.key)}
+                      className="btn btn-ghost btn-sm"
+                      style={{ color: "var(--muted-foreground)", width: "1.75rem", height: "1.75rem", padding: 0 }}
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ borderTop: "1px solid var(--border)", background: "var(--muted)" }}>
+                <td colSpan={3} className="py-2.5 px-3 text-sm font-semibold text-right">
+                  Total à rembourser
+                </td>
+                <td className="py-2.5 px-3 text-right font-bold" style={{ fontSize: "1rem", letterSpacing: "-.01em" }}>
+                  {formatTotal(total)}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          </table>
         </div>
+        <p className="px-4 py-2.5 text-xs" style={{ color: "var(--muted-foreground)", borderTop: "1px solid var(--border)" }}>
+          Joindre les originaux des justificatifs numérotés. Ticket CB seul non accepté.
+        </p>
       </div>
 
-      {/* Section 3 : Contexte */}
-      <div className="card">
-        <div className="section-title">3. Contexte et justification</div>
-        <div className="form-row full">
-          <label>Projet, événement ou mission liée à ces frais</label>
-          <textarea name="contexte" placeholder="ex : Achat matériel pour la réunion de rentrée…" />
+      {/* 3. Contexte */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <div className="card-title">3. Contexte et justification</div>
         </div>
-      </div>
-
-      {/* Section 4 : Paiement */}
-      <div className="card">
-        <div className="section-title">4. Modalités de paiement</div>
-        <div className="radio-group">
-          <label className="radio-opt">
-            <input type="radio" name="paiement" value="virement" defaultChecked />
-            <span>Virement bancaire (RIB joint)</span>
-          </label>
-          <label className="radio-opt">
-            <input type="radio" name="paiement" value="cheque" />
-            <span>Chèque</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Pièces jointes */}
-      <div className="card">
-        <div className="section-title">Pièces jointes (facultatif)</div>
-        <div className="file-zone">
-          <input
-            type="file"
-            name="pj[]"
-            multiple
-            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
-            onChange={(e) => setFileNames([...(e.target.files ?? [])].map((f) => ({ name: f.name, size: f.size })))}
-          />
-          <div style={{ fontSize: "1.8rem", marginBottom: 6 }}>📎</div>
-          <p>
-            <strong>Cliquez ou glissez vos fichiers ici</strong>
-          </p>
-          <p>Factures, tickets — JPG, PNG, PDF — 10 Mo max</p>
-        </div>
-        <div id="file-list">
-          {fileNames.map((f, i) => (
-            <span className="file-tag" key={i}>
-              {f.name} ({(f.size / 1024).toFixed(0)} ko)
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Section 5 : Signature */}
-      <div className="card">
-        <div className="section-title">5. Signature manuscrite numérique</div>
-        {hasSavedSig ? (
-          <p style={{ fontSize: ".82rem", color: "#64748b", marginBottom: 8 }}>
-            Votre signature enregistrée est pré-chargée. Dessinez dans le cadre pour en utiliser une nouvelle, ou{" "}
-            <a href="/ndf/profile" style={{ color: "#3b82f6" }}>
-              gérez-la dans votre profil
-            </a>
-            .
-          </p>
-        ) : (
-          <label style={{ marginBottom: 10 }}>Signez dans le cadre ci-dessous (souris ou doigt)</label>
-        )}
-        <div className="sig-container">
-          <canvas ref={canvasRef} id="sig-canvas" width={820} height={160} />
-          <div className="sig-placeholder" ref={placeholderRef}>
-            ✍ Signez ici
+        <div className="card-body field-group">
+          <div className="field">
+            <label className="field-label">Projet ou mission concernée</label>
+            <textarea className="input" name="contexte" rows={3} placeholder="ex : Achat matériel pour la réunion de rentrée…" defaultValue={draft?.contexte ?? ""} />
+            <p className="field-description">Précisez l&apos;événement ou l&apos;activité liée à ces frais.</p>
           </div>
         </div>
-        <button type="button" className="btn-clear-sig" onClick={handleClearOrRestore}>
-          {clearBtnLabel}
-        </button>
-        <input type="hidden" name="signature" ref={sigInputRef} />
-        <p style={{ fontSize: ".75rem", color: "#94a3b8", marginTop: 8 }}>
-          Signature manuscrite numérisée — pour usage interne uniquement.
-        </p>
       </div>
 
-      {/* Submit */}
-      <div className="card">
-        <p style={{ fontSize: ".85rem", color: "#64748b", marginBottom: 16 }}>
-          En soumettant, vous certifiez que les dépenses déclarées sont exactes et conformes à l&apos;activité de
-          l&apos;association.
-        </p>
-        <button type="submit" className="btn-submit">
-          Soumettre et générer l&apos;archive ZIP
-        </button>
+      {/* 4. Paiement */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <div className="card-title">4. Modalités de paiement</div>
+        </div>
+        <div className="card-body field-group">
+          <label className="choice-card">
+            <input type="radio" name="paiement" value="virement" defaultChecked={(draft?.paiement ?? "virement") === "virement"} />
+            <div>
+              <div className="text-sm font-medium">Virement bancaire</div>
+              <div className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                RIB inclus dans l&apos;archive ZIP
+              </div>
+            </div>
+          </label>
+          <label className="choice-card">
+            <input type="radio" name="paiement" value="cheque" defaultChecked={draft?.paiement === "cheque"} />
+            <div className="text-sm font-medium">Chèque</div>
+          </label>
+        </div>
       </div>
 
-      <style>{`
-        .expenses-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        .expenses-table th { background: #1e3a5f; color: white; font-size: .75rem; font-weight: 600;
-                             padding: 9px 8px; text-align: left; }
-        .expenses-table th.right { text-align: right; }
-        .expenses-table th.center { text-align: center; }
-        .expenses-table td { padding: 5px 5px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        .expenses-table tr:nth-child(even) td { background: #f8fafc; }
-        .expenses-table input { padding: 7px 8px; font-size: .88rem; }
-        .expenses-table input[type=number] { text-align: right; }
-        .ref-cell { text-align: center; font-weight: 600; color: #64748b; font-size: .82rem; width: 40px; }
-        .btn-del-row { background: none; border: none; cursor: pointer; color: #ef4444; font-size: 1.1rem;
-                   padding: 4px 8px; border-radius: 4px; transition: background .15s; }
-        .btn-del-row:hover { background: #fee2e2; }
-        .btn-add-row { background: none; border: 1.5px dashed #94a3b8; color: #64748b; border-radius: 6px;
-                       padding: 7px 14px; font-size: .82rem; cursor: pointer; transition: all .15s;
-                       display: inline-flex; align-items: center; gap: 5px; }
-        .btn-add-row:hover { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
-        .total-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px;
-                     padding: 10px 12px; background: #f8fafc; border-radius: 6px; margin-top: 8px; font-size: .9rem; }
-        .total-bar strong { font-size: 1.05rem; color: #1e3a5f; }
+      {/* 5. Pièces jointes */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <div className="card-title">5. Pièces jointes</div>
+        </div>
+        <div className="card-body field-group">
+          {keptPj.length > 0 && (
+            <div className="field">
+              <div className="field-label">Fichiers enregistrés</div>
+              <div className="flex flex-wrap gap-2">
+                {keptPj.map((name) => (
+                  <span key={name} className="badge badge-blue" style={{ borderRadius: "calc(var(--radius)*.8)", padding: ".25rem .75rem" }}>
+                    <Paperclip className="size-3" />
+                    {name}
+                    <input type="hidden" name="kept_pj[]" value={name} />
+                    <button
+                      type="button"
+                      className="ml-0.5"
+                      style={{ opacity: 0.7 }}
+                      onClick={() => setKeptPj((prev) => prev.filter((n) => n !== name))}
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <p className="field-description">Cliquez sur ✕ pour retirer une pièce jointe.</p>
+            </div>
+          )}
 
-        .radio-group { display: flex; gap: 24px; }
-        .radio-opt { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .radio-opt input[type=radio] { width: 16px; height: 16px; accent-color: #1e3a5f; }
+          <div className="field">
+            <div
+              className={`drop-zone${dragOver ? " drag-over" : ""}`}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
+                onChange={(e) => {
+                  if (e.target.files) addFiles(e.target.files);
+                }}
+              />
+              <Paperclip className="size-6 mx-auto mb-2" style={{ color: "var(--muted-foreground)" }} />
+              <p className="text-sm font-medium">Cliquer ou glisser-déposer</p>
+              <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
+                JPG, PNG, PDF — 10 Mo max par fichier
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {newFiles.map((f, i) => (
+                <span key={i} className="badge badge-blue" style={{ borderRadius: "calc(var(--radius)*.8)", padding: ".25rem .75rem", gap: ".375rem" }}>
+                  <Paperclip className="size-3" />
+                  {f.name} <span style={{ opacity: 0.6, fontSize: ".7rem" }}>({Math.round(f.size / 1024)} ko)</span>
+                  <button type="button" style={{ marginLeft: ".125rem", opacity: 0.7 }} onClick={() => removeNewFile(i)}>
+                    <X className="size-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-        .file-zone { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 20px;
-                     text-align: center; cursor: pointer; transition: all .15s; position: relative; }
-        .file-zone:hover { border-color: #3b82f6; background: #eff6ff; }
-        .file-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-zone p { font-size: .82rem; color: #64748b; }
-        #file-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-        .file-tag { background: #e0f2fe; color: #0369a1; font-size: .75rem; padding: 3px 10px; border-radius: 20px; }
+      {/* 6. Signature */}
+      <div className="card mb-4">
+        <div className="card-header flex items-center justify-between">
+          <div className="card-title">6. Signature</div>
+          <button type="button" className="btn btn-ghost btn-sm" style={{ color: "var(--muted-foreground)" }} onClick={handleClearOrRestore}>
+            {isCleared ? <RotateCcw className="size-4" /> : <EraserIcon className="size-4" />}
+            {isCleared ? "Restaurer" : "Effacer"}
+          </button>
+        </div>
+        <div className="card-body">
+          <div className="sig-box">
+            <canvas ref={canvasRef} />
+            <div
+              ref={placeholderRef}
+              className="absolute inset-0 flex items-center justify-center text-sm"
+              style={{ color: "var(--muted-foreground)", pointerEvents: "none" }}
+            >
+              <div className="text-center">
+                <PenLine className="size-5 mx-auto mb-1" style={{ opacity: 0.4 }} />
+                Signez ici avec votre souris ou votre doigt
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="signature" ref={sigInputRef} />
+          <p className="field-description mt-2">Signature manuscrite numérisée — usage interne uniquement.</p>
+        </div>
+      </div>
 
-        .sig-container { position: relative; border: 1.5px solid #d1d5db; border-radius: 8px;
-                         background: white; overflow: hidden; }
-        #sig-canvas { display: block; cursor: crosshair; touch-action: none; }
-        .sig-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-                           color: #cbd5e1; font-size: .85rem; pointer-events: none; text-align: center; }
-        .sig-placeholder.hidden { display: none; }
-        .btn-clear-sig { background: none; border: 1px solid #e2e8f0; border-radius: 5px; padding: 5px 12px;
-                         font-size: .78rem; color: #64748b; cursor: pointer; margin-top: 8px;
-                         transition: all .15s; }
-        .btn-clear-sig:hover { border-color: #ef4444; color: #ef4444; }
-
-        .btn-submit { background: #1e3a5f; color: white; border: none; border-radius: 8px;
-                      padding: 13px 32px; font-size: 1rem; font-weight: 600; cursor: pointer;
-                      transition: background .15s; width: 100%; }
-        .btn-submit:hover { background: #2d5087; }
-      `}</style>
+      {/* Boutons */}
+      <div className="card mb-6">
+        <div className="card-body">
+          <p className="field-description mb-4">
+            En soumettant, vous certifiez que les dépenses déclarées sont exactes et conformes à l&apos;activité de l&apos;association.
+          </p>
+          <div className="flex gap-3">
+            <button type="button" className="btn btn-secondary flex-1" onClick={() => submitAs("draft")}>
+              <Save className="size-4" />
+              Enregistrer brouillon
+            </button>
+            <button type="button" className="btn btn-primary flex-1" onClick={() => submitAs("submit")}>
+              {draft ? "Soumettre au trésorier" : "Soumettre et générer l'archive"}
+              <ArrowRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      </div>
     </form>
   );
 }

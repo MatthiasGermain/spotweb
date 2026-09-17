@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/ndf/auth";
 import { fetchBlob } from "@/lib/ndf/blob";
-import NdfForm from "@/components/ndf/NdfForm";
+import { prisma } from "@/lib/ndf/db";
+import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associations";
+import { parsePeriode } from "@/lib/ndf/periode";
+import NdfForm, { type DraftData } from "@/components/ndf/NdfForm";
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; id?: string; error?: string }>;
+  searchParams: Promise<{ success?: string; id?: string; error?: string; edit?: string }>;
 }) {
   const user = await requireUser();
   const sp = await searchParams;
@@ -27,51 +30,56 @@ export default async function HomePage({
     }
   }
 
+  await ensureDefaultAssociations();
+  const associations = await getAssociations();
+
+  let draft: DraftData | null = null;
+  const editId = (sp.edit ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
+  if (editId) {
+    const sub = await prisma.submission.findUnique({ where: { id: editId } });
+    if (sub && sub.userId === user.id && sub.status === "draft") {
+      const { month, year } = parsePeriode(sub.periode);
+      draft = {
+        id: sub.id,
+        nom: sub.nom,
+        month,
+        year: year || String(new Date().getFullYear()),
+        association: sub.association,
+        contexte: sub.contexte,
+        paiement: sub.paiement === "cheque" ? "cheque" : "virement",
+        lignes: (sub.lignes as { date: string; description: string; montant: number }[]) ?? [],
+        pj: (sub.pjNames as string[]) ?? [],
+      };
+    }
+  }
+
   return (
-    <div className="container">
+    <div className="page-sm">
       {success && (
-        <div className="alert alert-success">
-          ✓ Note de frais enregistrée.
+        <div className="alert alert-success mb-4">
+          ✓ Note générée avec succès.
           {successId && (
-            <a
-              href={`/ndf/api/download/${encodeURIComponent(successId)}`}
-              className="btn-dl"
-              style={{ marginLeft: 8 }}
-            >
-              ⬇ Télécharger le ZIP
+            <a href={`/ndf/api/download/${encodeURIComponent(successId)}`} className="font-semibold underline ml-1">
+              Télécharger l&apos;archive ZIP
             </a>
           )}
         </div>
       )}
-      {errorMsg && <div className="alert alert-error">⚠ {errorMsg}</div>}
+      {errorMsg && <div className="alert alert-error mb-4">⚠ {errorMsg}</div>}
+      {draft && <div className="alert alert-info mb-4">✏ Modification d&apos;un brouillon — complétez puis soumettez ou ré-enregistrez.</div>}
 
-      {!user.iban && (
-        <div className="iban-notice">
-          💡 Votre IBAN n&apos;est pas renseigné —{" "}
-          <Link href="/ndf/profile" style={{ color: "#15803d", fontWeight: 600 }}>
-            complétez votre profil
-          </Link>{" "}
-          pour qu&apos;il apparaisse dans les archives ZIP.
-        </div>
-      )}
+      <NdfForm
+        prefillNom={draft?.nom ?? prefillNom}
+        savedSigDataUrl={savedSigDataUrl}
+        associations={associations}
+        draft={draft}
+      />
 
-      <NdfForm prefillNom={prefillNom} savedSigDataUrl={savedSigDataUrl} />
-
-      <div className="card" style={{ textAlign: "center", padding: "20px 28px" }}>
-        <Link
-          href="/ndf/history"
-          style={{ color: "#1e3a5f", fontWeight: 600, fontSize: ".95rem", textDecoration: "none" }}
-        >
-          📋 Voir l&apos;historique de mes notes de frais →
+      <div className="text-center pb-6">
+        <Link href="/ndf/history" className="text-sm inline-flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
+          📋 Voir l&apos;historique de mes notes de frais
         </Link>
       </div>
-
-      <style>{`
-        .iban-notice {
-          background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 7px;
-          padding: 10px 14px; font-size: .8rem; color: #166534; margin-bottom: 20px;
-        }
-      `}</style>
     </div>
   );
 }

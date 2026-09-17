@@ -5,7 +5,8 @@ export default function IbanInput({ defaultValue }: { defaultValue: string }) {
     <input
       type="text"
       name="iban"
-      className="iban-input"
+      className="input"
+      style={{ fontFamily: "'Courier New', monospace", letterSpacing: ".05em" }}
       defaultValue={defaultValue}
       placeholder="FR76 3000 6000 0112 3456 7890 189"
       onInput={(e) => {
