@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/ndf/auth";
-import { loginAction, registerAction } from "./actions";
 
 export default async function LoginPage({
   searchParams,
@@ -44,7 +43,8 @@ export default async function LoginPage({
         <div className="card-body">
           {error && <div className="alert alert-error mb-4">{error}</div>}
 
-          <form action={mode === "register" ? registerAction : loginAction} className="field-group">
+          <form method="POST" action="/ndf/api/auth" className="field-group">
+            <input type="hidden" name="mode" value={mode} />
             <div className="field">
               <label className="field-label">Identifiant</label>
               <input className="input" type="text" name="username" defaultValue={usernameValue} autoComplete="username" required />
