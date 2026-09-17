@@ -28,7 +28,10 @@ export async function createSession(userId: string) {
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    // "lax" (pas "strict") : Safari/WebKit a un historique de bugs avec les
+    // cookies Strict posés sur une réponse de redirection (exactement notre
+    // cas ici). Lax reste protecteur contre le CSRF pour un cookie de session.
+    sameSite: "lax",
     path: "/ndf",
     maxAge: SESSION_DURATION_S,
   });
