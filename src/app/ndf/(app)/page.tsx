@@ -10,7 +10,7 @@ import NdfForm, { type DraftData } from "@/components/ndf/NdfForm";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; id?: string; error?: string; edit?: string }>;
+  searchParams: Promise<{ success?: string; id?: string; error?: string; edit?: string; mailerr?: string }>;
 }) {
   const user = await requireUser();
   const sp = await searchParams;
@@ -18,6 +18,7 @@ export default async function HomePage({
   const success = sp.success === "1";
   const successId = sp.id ?? "";
   const errorMsg = sp.error ?? "";
+  const mailErr = sp.mailerr ?? "";
 
   const prefillNom = `${user.prenom} ${user.nom}`.trim();
 
@@ -61,9 +62,14 @@ export default async function HomePage({
           ✓ Note générée avec succès.
           {successId && (
             <a href={`/ndf/api/download/${encodeURIComponent(successId)}`} className="font-semibold underline ml-1">
-              Télécharger l&apos;archive ZIP
+              Télécharger
             </a>
           )}
+        </div>
+      )}
+      {success && mailErr && (
+        <div className="alert alert-error mb-4">
+          ⚠ Votre note est bien enregistrée, mais l&apos;e-mail de notification n&apos;a pas pu être envoyé : {mailErr}
         </div>
       )}
       {errorMsg && <div className="alert alert-error mb-4">⚠ {errorMsg}</div>}

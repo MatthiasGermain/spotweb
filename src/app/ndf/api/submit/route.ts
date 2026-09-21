@@ -257,6 +257,7 @@ async function handleSubmit(request: Request) {
     }
 
     const prenomDisplay = user.prenom.trim() !== "" ? user.prenom.trim() : nom;
+    let mailError = "";
     try {
       await sendNdfNotification({
         recipients: [...recipients],
@@ -272,9 +273,11 @@ async function handleSubmit(request: Request) {
       });
     } catch (err) {
       console.error("Échec de l'envoi de l'email de notification :", err);
+      mailError = err instanceof Error ? err.message : String(err);
     }
 
-    return redirectHome(request, { success: "1", id });
+    // La NDF est enregistrée même si le mail échoue ; on l'indique à l'utilisateur.
+    return redirectHome(request, { success: "1", id, ...(mailError ? { mailerr: mailError } : {}) });
   }
 
   const url = new URL("/ndf/history", request.url);
