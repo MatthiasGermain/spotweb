@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/ndf/auth";
 import { fetchBlob } from "@/lib/ndf/blob";
+import { toDataUrl } from "@/lib/ndf/image";
 import { prisma } from "@/lib/ndf/db";
 import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associations";
 import { parsePeriode } from "@/lib/ndf/periode";
@@ -24,7 +25,7 @@ export default async function HomePage({
   if (user.signatureUrl) {
     try {
       const buf = await fetchBlob(user.signatureUrl);
-      savedSigDataUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
+      savedSigDataUrl = toDataUrl(buf);
     } catch {
       savedSigDataUrl = null;
     }

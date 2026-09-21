@@ -3,16 +3,11 @@
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/ndf/auth";
 import { uploadBlob, deleteBlobs } from "@/lib/ndf/blob";
-import { toJpegOnWhite } from "@/lib/ndf/image";
+import { normalizeImage, errMessage } from "@/lib/ndf/image";
 import { createAssociation, updateAssociation, deleteAssociation, getAssociationById } from "@/lib/ndf/associations";
 
 function msgRedirect(msg: string): never {
   redirect(`/ndf/settings?msg=${encodeURIComponent(msg)}`);
-}
-
-async function processLogo(file: File): Promise<Buffer> {
-  const buffer = Buffer.from(await file.arrayBuffer());
-  return toJpegOnWhite(buffer);
 }
 
 export async function saveAssociationAction(formData: FormData) {
@@ -41,16 +36,20 @@ export async function saveAssociationAction(formData: FormData) {
         )}`
       );
     }
+    const back = assocId ? `edit=${encodeURIComponent(assocId)}` : "new=1";
+    let img;
     try {
-      const jpeg = await processLogo(logoFile);
-      const pathId = assocId || "new";
-      logoUrl = await uploadBlob(`ndf/associations/${pathId}/logo.jpg`, jpeg, "image/jpeg");
-    } catch {
-      redirect(
-        `/ndf/settings?${assocId ? `edit=${encodeURIComponent(assocId)}` : "new=1"}&error=${encodeURIComponent(
-          "Impossible de lire l'image."
-        )}`
-      );
+      img = await normalizeImage(Buffer.from(await logoFile.arrayBuffer()));
+    } catch (err) {
+      console.error("saveAssociationAction (image):", err);
+      redirect(`/ndf/settings?${back}&error=${encodeURIComponent(`Image illisible : ${errMessage(err)}`)}`);
+    }
+    try {
+      const ext = img.contentType === "image/png" ? "png" : "jpg";
+      logoUrl = await uploadBlob(`ndf/associations/${assocId || "new"}/logo.${ext}`, img.buffer, img.contentType);
+    } catch (err) {
+      console.error("saveAssociationAction (stockage):", err);
+      redirect(`/ndf/settings?${back}&error=${encodeURIComponent(`Envoi du logo impossible (stockage) : ${errMessage(err)}`)}`);
     }
   }
 
