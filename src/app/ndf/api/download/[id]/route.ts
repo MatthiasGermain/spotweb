@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, isPrivileged } from "@/lib/ndf/auth";
+import { getCurrentUser, isTresorier } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import JSZip from "jszip";
 import { fetchBlob } from "@/lib/ndf/blob";
@@ -21,7 +21,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     });
   }
 
-  if (submission.userId !== user.id && !isPrivileged(user)) {
+  // Propriétaire ou trésorier uniquement : l'admin configure l'app mais ne voit pas les NDF des autres.
+  if (submission.userId !== user.id && !isTresorier(user)) {
     return new NextResponse("Accès refusé.", {
       status: 403,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
