@@ -25,11 +25,14 @@ interface NotificationInput {
   total: number;
   paiement: "virement" | "cheque";
   lignes: NdfLigne[];
-  zipBuffer: Buffer;
+  /** Pièce jointe du mail : archive ZIP ou PDF unique selon le réglage du trésorier. */
+  attachment: { filename: string; content: Buffer; contentType: string };
 }
 
 export async function sendNdfNotification(input: NotificationInput): Promise<void> {
-  const { recipients, id, nom, prenomDisplay, periode, association, total, paiement, lignes, zipBuffer } = input;
+  const { recipients, id, nom, prenomDisplay, periode, association, total, paiement, lignes, attachment } = input;
+  const isPdf = attachment.contentType === "application/pdf";
+  const what = isPdf ? "le PDF ci-joint" : "l'archive ci-jointe";
   if (recipients.length === 0) return;
 
   const host = process.env.SMTP_HOST;
@@ -80,7 +83,7 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
   <div style="padding:28px 32px">
     <p style="margin:0 0 16px;color:#1e293b;font-size:.95rem;line-height:1.6">
       Une nouvelle note de frais pour le compte de <strong>${escapeHtml(prenomDisplay)}</strong> a été créée.
-      Les documents et informations nécessaires sont dans l'archive ci-jointe.
+      Les documents et informations nécessaires sont dans ${what}.
     </p>
     <table style="width:100%;border-collapse:collapse;margin-bottom:24px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
       <tr style="background:#f8fafc">
@@ -117,7 +120,7 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
     </table>
     <div style="text-align:center;margin-bottom:24px">
       <a href="${dlUrl}" style="display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:.92rem">
-        ⬇ Télécharger l'archive ZIP
+        ⬇ Télécharger ${isPdf ? "le PDF" : "l'archive ZIP"}
       </a>
     </div>
     <p style="text-align:center;margin:0 0 8px">
@@ -138,8 +141,8 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
     `Total        : ${totalStr}\n` +
     `Paiement     : ${paiementStr}\n\n` +
     `Une nouvelle note de frais pour le compte de ${prenomDisplay} a été créée.\n` +
-    `Les documents et informations nécessaires sont dans l'archive ci-jointe.\n\n` +
-    `Télécharger l'archive : ${dlUrl}\n` +
+    `Les documents et informations nécessaires sont dans ${what}.\n\n` +
+    `Télécharger ${isPdf ? "le PDF" : "l'archive"} : ${dlUrl}\n` +
     `Consulter l'historique : ${histUrl}\n\n` +
     `— ${association}`;
 
@@ -149,7 +152,7 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
     subject: `Nouvelle note de frais — ${nom} — ${periode}`,
     text,
     html,
-    attachments: [{ filename: `ndf-${id}.zip`, content: zipBuffer, contentType: "application/zip" }],
+    attachments: [attachment],
   });
 }
 
