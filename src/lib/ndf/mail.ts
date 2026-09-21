@@ -37,18 +37,21 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
     throw new Error("aucun destinataire (renseignez votre e-mail dans votre profil, et vérifiez que le trésorier a un e-mail).");
   }
 
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
+  // Tolère une saisie du type "http://ssl0.ovh.net/" ou "ssl0.ovh.net:465" : on ne garde que le nom d'hôte.
+  const host = process.env.SMTP_HOST?.trim().replace(/^[a-z]+:\/\//i, "").replace(/[/:].*$/, "");
+  const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS;
   if (!host || !user || !pass) {
     const missing = [!host && "SMTP_HOST", !user && "SMTP_USER", !pass && "SMTP_PASS"].filter(Boolean).join(", ");
     throw new Error(`l'envoi d'e-mails n'est pas configuré sur le serveur (variable(s) manquante(s) : ${missing}).`);
   }
 
+  const port = Number(process.env.SMTP_PORT?.trim() || 465);
   const transporter = nodemailer.createTransport({
     host,
-    port: Number(process.env.SMTP_PORT ?? 465),
-    secure: true,
+    port,
+    // 465 = TLS direct ; 587 = STARTTLS (secure:false, la connexion est ensuite chiffrée).
+    secure: port === 465,
     auth: { user, pass },
   });
 
