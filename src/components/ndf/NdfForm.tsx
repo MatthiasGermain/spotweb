@@ -93,7 +93,8 @@ export default function NdfForm({
 
   // ── Fichiers ────────────────────────────────────────────────────────────
   function addFiles(files: FileList | File[]) {
-    setNewFiles((prev) => [...prev, ...Array.from(files)]);
+    const added = Array.from(files); // copie avant tout reset de l'input (FileList "live")
+    setNewFiles((prev) => [...prev, ...added]);
   }
   function removeNewFile(idx: number) {
     setNewFiles((prev) => prev.filter((_, i) => i !== idx));
@@ -439,10 +440,12 @@ export default function NdfForm({
               <input
                 ref={fileInputRef}
                 type="file"
+                name="pj[]"
                 multiple
                 accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
                 onChange={(e) => {
                   if (e.target.files) addFiles(e.target.files);
+                  e.target.value = ""; // permet de re-sélectionner le même fichier
                 }}
               />
               <Paperclip className="size-6 mx-auto mb-2" style={{ color: "var(--muted-foreground)" }} />
