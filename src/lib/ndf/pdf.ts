@@ -233,14 +233,16 @@ export async function generateNdfPdf(
           .map((l) => l.trim())
           .filter(Boolean)
       : [];
-  const headerH = Math.max(14 + 14 + adresseLines.length * 9, logoH + pad * 2) + 6.0;
+  // Nom de l'association (13 pt) puis adresse (9 pt, interligne 11) sous le titre.
+  const nameBase = 29;
+  const addrFirst = nameBase + 15;
+  const addrLh = 11;
+  const lastBase = adresseLines.length > 0 ? addrFirst + addrLh * (adresseLines.length - 1) : nameBase;
+  const headerH = Math.max(lastBase + 4, logoH + pad * 2) + 6.0;
 
+  // Logo seul, sans cadre ni fond, aligné à droite.
   if (logoJpeg) {
-    const bx = rm - logoW - pad;
-    const bw = logoW + pad * 2;
-    pdf.fillRect(bx, y, bw, headerH, 0.97, 0.97, 0.97);
-    pdf.rect(bx, y, bw, headerH, 0.5);
-    await pdf.addJpegImage(logoJpeg, bx + pad, y + (headerH - logoH) / 2, logoW, logoH);
+    await pdf.addJpegImage(logoJpeg, rm - logoW, y + (headerH - logoH) / 2, logoW, logoH);
   }
 
   pdf.setFont(true, 12);
@@ -248,17 +250,13 @@ export async function generateNdfPdf(
   const titleW = pdf.tw(title);
   pdf.text(lm + Math.max(0, (textZoneW - titleW) / 2), y + 13, title);
 
-  let y2 = y + 29;
-  pdf.setFont(true, 9.5);
-  pdf.text(lm, y2, nomAsso);
+  pdf.setFont(true, 13);
+  pdf.textClip(lm, y + nameBase, nomAsso, textZoneW - 90);
   pdf.setFont(false, 7.5);
   const refStr = "Réf : " + id;
-  pdf.text(lm + textZoneW - pdf.tw(refStr), y2, refStr);
-  y2 += 11;
-  for (const l of adresseLines) {
-    pdf.text(lm, y2, l);
-    y2 += 9;
-  }
+  pdf.text(lm + textZoneW - pdf.tw(refStr), y + nameBase, refStr);
+  pdf.setFont(false, 9);
+  adresseLines.forEach((l, i) => pdf.textClip(lm, y + addrFirst + addrLh * i, l, textZoneW));
 
   y += headerH + 4;
   pdf.hline(lm, y, cw, 1.2);
@@ -383,7 +381,8 @@ export async function generateNdfPdf(
 
   if (contexte.trim() !== "") {
     pdf.setFont(false, 9);
-    pdf.multiText(lm + 5, y, contexte, cw - 10, 13);
+    // multiText renvoie le y de la ligne suivante : la section s'adapte au texte.
+    y = pdf.multiText(lm + 5, y, contexte, cw - 10, 13) - 3;
   }
   y += 24;
 
