@@ -33,14 +33,16 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
   const { recipients, id, nom, prenomDisplay, periode, association, total, paiement, lignes, attachment } = input;
   const isPdf = attachment.contentType === "application/pdf";
   const what = isPdf ? "le PDF ci-joint" : "l'archive ci-jointe";
-  if (recipients.length === 0) return;
+  if (recipients.length === 0) {
+    throw new Error("aucun destinataire (renseignez votre e-mail dans votre profil, et vérifiez que le trésorier a un e-mail).");
+  }
 
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   if (!host || !user || !pass) {
-    console.warn("SMTP non configuré (SMTP_HOST/SMTP_USER/SMTP_PASS) — email de notification ignoré.");
-    return;
+    const missing = [!host && "SMTP_HOST", !user && "SMTP_USER", !pass && "SMTP_PASS"].filter(Boolean).join(", ");
+    throw new Error(`l'envoi d'e-mails n'est pas configuré sur le serveur (variable(s) manquante(s) : ${missing}).`);
   }
 
   const transporter = nodemailer.createTransport({
