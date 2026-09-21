@@ -1,5 +1,5 @@
 import "server-only";
-import { put, del } from "@vercel/blob";
+import { put, del, get } from "@vercel/blob";
 
 export async function uploadBlob(
   pathname: string,
@@ -7,7 +7,9 @@ export async function uploadBlob(
   contentType?: string
 ): Promise<string> {
   const blob = await put(pathname, data, {
-    access: "public",
+    // Le store Vercel Blob du projet est en accès privé : les fichiers ne sont
+    // lisibles que côté serveur (get + token), jamais par URL directe.
+    access: "private",
     contentType,
     addRandomSuffix: true,
   });
@@ -20,9 +22,9 @@ export async function deleteBlobs(urls: string[]): Promise<void> {
   await del(clean);
 }
 
-/** Télécharge le contenu d'un blob côté serveur (pour le proxifier via une route protégée). */
+/** Télécharge le contenu d'un blob privé côté serveur (pour le proxifier via une route protégée). */
 export async function fetchBlob(url: string): Promise<Buffer> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Impossible de récupérer le fichier (${res.status}).`);
-  return Buffer.from(await res.arrayBuffer());
+  const result = await get(url, { access: "private" });
+  if (!result || result.statusCode !== 200) throw new Error("Impossible de récupérer le fichier.");
+  return Buffer.from(await new Response(result.stream).arrayBuffer());
 }
