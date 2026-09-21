@@ -44,7 +44,7 @@ export default async function SettingsPage({
                   {a.logoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={a.logoUrl}
+                      src={`/ndf/api/logo/${a.id}`}
                       alt=""
                       className="w-16 h-10 object-contain rounded shrink-0"
                       style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
@@ -120,7 +120,7 @@ export default async function SettingsPage({
                     style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={editAssoc.logoUrl} alt="Logo actuel" className="max-h-12 max-w-32 object-contain" />
+                    <img src={`/ndf/api/logo/${editAssoc.id}`} alt="Logo actuel" className="max-h-12 max-w-32 object-contain" />
                     <div>
                       <p className="text-sm font-medium mb-2">Logo actuel</p>
                       <ConfirmForm action={deleteLogoAction} confirmMessage="Supprimer le logo ?">
