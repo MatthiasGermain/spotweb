@@ -29,6 +29,14 @@ interface NotificationInput {
   attachment: { filename: string; content: Buffer; contentType: string };
 }
 
+/** Retire espaces/retours à la ligne parasites et une paire de guillemets englobants (copier-coller depuis un .env). */
+function cleanEnv(v: string | undefined): string | undefined {
+  if (v === undefined) return undefined;
+  let out = v.trim();
+  if (out.length >= 2 && (out[0] === '"' || out[0] === "'") && out[out.length - 1] === out[0]) out = out.slice(1, -1);
+  return out;
+}
+
 export async function sendNdfNotification(input: NotificationInput): Promise<void> {
   const { recipients, id, nom, prenomDisplay, periode, association, total, paiement, lignes, attachment } = input;
   const isPdf = attachment.contentType === "application/pdf";
@@ -39,8 +47,8 @@ export async function sendNdfNotification(input: NotificationInput): Promise<voi
 
   // Tolère une saisie du type "http://ssl0.ovh.net/" ou "ssl0.ovh.net:465" : on ne garde que le nom d'hôte.
   const host = process.env.SMTP_HOST?.trim().replace(/^[a-z]+:\/\//i, "").replace(/[/:].*$/, "");
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASS;
+  const user = cleanEnv(process.env.SMTP_USER);
+  const pass = cleanEnv(process.env.SMTP_PASS);
   if (!host || !user || !pass) {
     const missing = [!host && "SMTP_HOST", !user && "SMTP_USER", !pass && "SMTP_PASS"].filter(Boolean).join(", ");
     throw new Error(`l'envoi d'e-mails n'est pas configuré sur le serveur (variable(s) manquante(s) : ${missing}).`);
