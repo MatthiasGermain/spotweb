@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import JSZip from "jszip";
-import sharp from "sharp";
 import { getCurrentUser, getTresorierEmails } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { generateNdfPdf, type NdfLigne } from "@/lib/ndf/pdf";
@@ -9,6 +8,7 @@ import { sendNdfNotification } from "@/lib/ndf/mail";
 import { generateSubmissionId } from "@/lib/ndf/id";
 import { sniffMime, sanitizeFilename } from "@/lib/ndf/files";
 import { ensureDefaultAssociations, getAssociations, getAssociationByNom } from "@/lib/ndf/associations";
+import { toJpegOnWhite } from "@/lib/ndf/image";
 
 const MAX_UPLOAD_B = 10 * 1024 * 1024; // 10 Mo
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
   } else if (sigData.startsWith("data:image/png;base64,")) {
     const pngBuffer = Buffer.from(sigData.slice("data:image/png;base64,".length), "base64");
     try {
-      signatureJpeg = await sharp(pngBuffer).flatten({ background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
+      signatureJpeg = await toJpegOnWhite(pngBuffer);
     } catch {
       signatureJpeg = null;
     }

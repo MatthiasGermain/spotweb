@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import sharp from "sharp";
 import { requireUser, changePassword } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { uploadBlob, deleteBlobs } from "@/lib/ndf/blob";
+import { toJpegOnWhite } from "@/lib/ndf/image";
 
 export async function updateProfileAction(formData: FormData) {
   const user = await requireUser();
@@ -61,13 +61,14 @@ export async function updateSignatureAction(formData: FormData) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const jpeg = await sharp(buffer).flatten({ background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
+    const jpeg = await toJpegOnWhite(buffer);
 
     if (user.signatureUrl) await deleteBlobs([user.signatureUrl]);
     const url = await uploadBlob(`ndf/users/${user.id}/signature.jpg`, jpeg, "image/jpeg");
 
     await prisma.user.update({ where: { id: user.id }, data: { signatureUrl: url } });
-  } catch {
+  } catch (err) {
+    console.error("updateSignatureAction:", err);
     redirect(`/ndf/profile?sigerror=${encodeURIComponent("Impossible de lire l'image.")}`);
   }
 
