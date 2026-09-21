@@ -10,6 +10,9 @@ import { sniffMime, sanitizeFilename } from "@/lib/ndf/files";
 import { ensureDefaultAssociations, getAssociations, getAssociationByNom } from "@/lib/ndf/associations";
 import { normalizeImage } from "@/lib/ndf/image";
 
+// Génération PDF + ZIP + envoi du mail : laisse de la marge au-delà des 10 s par défaut.
+export const maxDuration = 60;
+
 const MAX_UPLOAD_B = 10 * 1024 * 1024; // 10 Mo
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
 
@@ -19,7 +22,7 @@ function redirectHome(request: Request, params: Record<string, string>) {
   return NextResponse.redirect(url, 303);
 }
 
-export async function POST(request: Request) {
+async function handleSubmit(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.redirect(new URL("/ndf/login", request.url), 303);
 
@@ -249,4 +252,14 @@ export async function POST(request: Request) {
   const url = new URL("/ndf/history", request.url);
   url.searchParams.set("draft_saved", "1");
   return NextResponse.redirect(url, 303);
+}
+
+export async function POST(request: Request) {
+  try {
+    return await handleSubmit(request);
+  } catch (err) {
+    console.error("Échec de l'enregistrement de la NDF :", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return redirectHome(request, { error: `Enregistrement impossible : ${message}` });
+  }
 }

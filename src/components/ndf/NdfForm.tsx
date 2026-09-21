@@ -190,6 +190,15 @@ export default function NdfForm({
       alert("Veuillez choisir une association.");
       return;
     }
+    // Vercel refuse les requêtes de plus de 4,5 Mo (erreur 413, avant même notre code).
+    const totalBytes = newFiles.reduce((sum, f) => sum + f.size, 0);
+    if (totalBytes > 4 * 1024 * 1024) {
+      alert(
+        `Les pièces jointes pèsent ${(totalBytes / 1024 / 1024).toFixed(1)} Mo au total : la limite d'envoi est d'environ 4 Mo. ` +
+          "Réduisez leur taille ou retirez-en."
+      );
+      return;
+    }
     if (actionTypeRef.current) actionTypeRef.current.value = type;
 
     // Injecte les fichiers sélectionnés dans le vrai input[type=file] via DataTransfer
