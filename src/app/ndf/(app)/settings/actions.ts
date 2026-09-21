@@ -1,9 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import sharp from "sharp";
 import { requireRole } from "@/lib/ndf/auth";
 import { uploadBlob, deleteBlobs } from "@/lib/ndf/blob";
+import { toJpegOnWhite } from "@/lib/ndf/image";
 import { createAssociation, updateAssociation, deleteAssociation, getAssociationById } from "@/lib/ndf/associations";
 
 function msgRedirect(msg: string): never {
@@ -12,7 +12,7 @@ function msgRedirect(msg: string): never {
 
 async function processLogo(file: File): Promise<Buffer> {
   const buffer = Buffer.from(await file.arrayBuffer());
-  return sharp(buffer).flatten({ background: "#ffffff" }).jpeg({ quality: 90 }).toBuffer();
+  return toJpegOnWhite(buffer);
 }
 
 export async function saveAssociationAction(formData: FormData) {
