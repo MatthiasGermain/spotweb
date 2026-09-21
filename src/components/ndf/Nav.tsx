@@ -63,10 +63,14 @@ export default function Nav({
             <CircleUser className="size-4" />
             <span className="hidden sm:inline text-xs font-medium">{username}</span>
           </Link>
-          <Link href="/ndf/logout" className="nav-link">
-            <LogOut className="size-4" />
-            <span className="hidden md:inline">Déco.</span>
-          </Link>
+          {/* POST (et non un <Link> GET) : Next pré-charge les liens visibles, ce qui
+              déclenchait la déconnexion toute seule à chaque affichage de page. */}
+          <form method="POST" action="/ndf/logout" className="flex">
+            <button type="submit" className="nav-link" style={{ cursor: "pointer" }}>
+              <LogOut className="size-4" />
+              <span className="hidden md:inline">Déco.</span>
+            </button>
+          </form>
         </div>
       </div>
 
