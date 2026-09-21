@@ -60,3 +60,9 @@ model Association {
   logoUrl   String?
   createdAt DateTime @default(now())
 }
+
+/// Réglages globaux de l'app Notes de frais (clé/valeur), modifiables par le trésorier.
+model Setting {
+  key   String @id
+  value String
+}

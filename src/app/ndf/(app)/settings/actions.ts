@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/ndf/auth";
 import { uploadBlob, deleteBlobs } from "@/lib/ndf/blob";
 import { normalizeImage, errMessage } from "@/lib/ndf/image";
+import { saveDeliveryConfig } from "@/lib/ndf/settings";
+import { DEFAULT_NAME_TEMPLATE } from "@/lib/ndf/naming";
 import { createAssociation, updateAssociation, deleteAssociation, getAssociationById } from "@/lib/ndf/associations";
 
 function msgRedirect(msg: string): never {
@@ -84,4 +86,12 @@ export async function deleteAssociationAction(formData: FormData) {
     await deleteAssociation(assocId);
   }
   msgRedirect("✓ Association supprimée.");
+}
+
+export async function saveDeliveryAction(formData: FormData) {
+  await requireRole(["ADMIN", "TRESORIER"]);
+  const mode = formData.get("mode") === "pdf" ? "pdf" : "zip";
+  const template = String(formData.get("template") ?? "").trim().slice(0, 100) || DEFAULT_NAME_TEMPLATE;
+  await saveDeliveryConfig({ mode, nameTemplate: template });
+  msgRedirect("✓ Réglages de réception enregistrés.");
 }

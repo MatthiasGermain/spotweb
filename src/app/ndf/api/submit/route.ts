@@ -9,6 +9,9 @@ import { generateSubmissionId } from "@/lib/ndf/id";
 import { sniffMime, sanitizeFilename } from "@/lib/ndf/files";
 import { ensureDefaultAssociations, getAssociations, getAssociationByNom } from "@/lib/ndf/associations";
 import { normalizeImage } from "@/lib/ndf/image";
+import { getDeliveryConfig } from "@/lib/ndf/settings";
+import { buildMergedPdf } from "@/lib/ndf/merge";
+import { renderFilename, shortUuidFromId, splitFullName } from "@/lib/ndf/naming";
 
 // Génération PDF + ZIP + envoi du mail : laisse de la marge au-delà des 10 s par défaut.
 export const maxDuration = 60;
@@ -148,6 +151,17 @@ async function handleSubmit(request: Request) {
 
   // ── Génération de l'identifiant + PDF ───────────────────────────────────
   const id = generateSubmissionId();
+
+  // Nom du PDF selon le modèle configuré par le trésorier (ex. 2026-09-21_NDF_TH_a3f9c1).
+  const delivery = await getDeliveryConfig();
+  const fallbackName = splitFullName(nom);
+  const baseName = renderFilename(delivery.nameTemplate, {
+    date: new Date(),
+    prenom: user.prenom.trim() || fallbackName.prenom,
+    nom: user.nom.trim() || fallbackName.nom,
+    association,
+    uuid: shortUuidFromId(id),
+  });
   const pdfBuffer = await generateNdfPdf(
     id,
     nom,
@@ -164,7 +178,7 @@ async function handleSubmit(request: Request) {
 
   // ── Construction du ZIP ──────────────────────────────────────────────────
   const zip = new JSZip();
-  zip.file(`ndf-${id}.pdf`, pdfBuffer);
+  zip.file(`${baseName}.pdf`, pdfBuffer);
 
   const iban = user.iban.trim();
   if (iban !== "") {
@@ -228,6 +242,20 @@ async function handleSubmit(request: Request) {
     if (user.email.trim() !== "") recipients.add(user.email.trim());
     for (const e of await getTresorierEmails()) recipients.add(e);
 
+    // Mode « PDF unique » : NDF en page 1 (IBAN inclus) puis toutes les pièces jointes.
+    let attachment = { filename: `${baseName}.zip`, content: zipBuffer, contentType: "application/zip" };
+    if (delivery.mode === "pdf") {
+      try {
+        const merged = await buildMergedPdf(pdfBuffer, [
+          ...keptPjContents.map((k) => ({ name: k.name, buffer: k.content })),
+          ...pjFiles,
+        ]);
+        attachment = { filename: `${baseName}.pdf`, content: merged, contentType: "application/pdf" };
+      } catch (err) {
+        console.error("Fusion PDF impossible, envoi de l'archive ZIP à la place :", err);
+      }
+    }
+
     const prenomDisplay = user.prenom.trim() !== "" ? user.prenom.trim() : nom;
     try {
       await sendNdfNotification({
@@ -240,7 +268,7 @@ async function handleSubmit(request: Request) {
         total,
         paiement,
         lignes,
-        zipBuffer,
+        attachment,
       });
     } catch (err) {
       console.error("Échec de l'envoi de l'email de notification :", err);
