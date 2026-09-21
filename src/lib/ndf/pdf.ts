@@ -41,6 +41,7 @@ class PdfWriter {
   private font!: PDFFont;
   private size = 10;
   private color = rgb(0, 0, 0);
+  private charset = new Set<number>();
 
   static async create(): Promise<PdfWriter> {
     const w = new PdfWriter();
@@ -49,6 +50,7 @@ class PdfWriter {
     w.fReg = await w.doc.embedFont(StandardFonts.Helvetica);
     w.fBold = await w.doc.embedFont(StandardFonts.HelveticaBold);
     w.font = w.fReg;
+    w.charset = new Set([...w.fReg.getCharacterSet(), ...w.fBold.getCharacterSet()]);
     return w;
   }
 
@@ -67,11 +69,27 @@ class PdfWriter {
     return this;
   }
 
+  /**
+   * Rend un texte encodable par la police standard (WinAnsi) : normalise les
+   * fins de ligne (\r\n des textarea), remplace les espaces spéciaux et
+   * les caractères hors WinAnsi (emoji, flèches…) par "?". Conserve les \n.
+   */
+  private clean(t: string): string {
+    const norm = t.replace(/\r\n?/g, "\n").replace(/[\t\u2000-\u200b\u202f\u205f\u3000]/g, " ");
+    let out = "";
+    for (const ch of norm) {
+      const cp = ch.codePointAt(0)!;
+      out += ch === "\n" || this.charset.has(cp) ? ch : "?";
+    }
+    return out;
+  }
+
   tw(t: string): number {
-    return this.font.widthOfTextAtSize(t, this.size);
+    return this.font.widthOfTextAtSize(this.clean(t).replace(/\n/g, " "), this.size);
   }
 
   text(x: number, y: number, t: string): this {
+    t = this.clean(t).replace(/\n/g, " ");
     if (!t) return this;
     this.page.drawText(t, { x, y: this.cy(y), size: this.size, font: this.font, color: this.color });
     return this;
@@ -89,7 +107,7 @@ class PdfWriter {
   /** Texte multi-lignes avec retour automatique. Retourne le nouveau y. */
   multiText(x: number, y: number, t: string, maxW: number, lh = 14): number {
     let curY = y;
-    for (const para of t.split("\n")) {
+    for (const para of this.clean(t).split("\n")) {
       if (para.trim() === "") {
         curY += lh * 0.5;
         continue;
