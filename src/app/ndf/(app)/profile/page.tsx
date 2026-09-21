@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/ndf/auth";
 import { fetchBlob } from "@/lib/ndf/blob";
+import { toDataUrl } from "@/lib/ndf/image";
 import ConfirmForm from "@/components/ndf/ConfirmForm";
 import IbanInput from "@/components/ndf/IbanInput";
 import { updateProfileAction, changePasswordAction, updateSignatureAction } from "./actions";
@@ -27,7 +28,7 @@ export default async function ProfilePage({
   if (user.signatureUrl) {
     try {
       const buf = await fetchBlob(user.signatureUrl);
-      sigDataUrl = `data:image/jpeg;base64,${buf.toString("base64")}`;
+      sigDataUrl = toDataUrl(buf);
     } catch {
       sigDataUrl = null;
     }

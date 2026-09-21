@@ -147,15 +147,21 @@ class PdfWriter {
     return this;
   }
 
+  /** Intègre un JPEG ou un PNG (détecté par sa signature). */
+  private embedImage(bytes: Uint8Array) {
+    const isPng = bytes.length > 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+    return isPng ? this.doc.embedPng(bytes) : this.doc.embedJpg(bytes);
+  }
+
   async addJpegImage(jpegBytes: Uint8Array, x: number, y: number, w: number, h: number): Promise<this> {
     if (!jpegBytes || jpegBytes.length === 0) return this;
-    const img = await this.doc.embedJpg(jpegBytes);
+    const img = await this.embedImage(jpegBytes);
     this.page.drawImage(img, { x, y: this.cy(y + h), width: w, height: h });
     return this;
   }
 
   async jpegSize(jpegBytes: Uint8Array): Promise<{ width: number; height: number }> {
-    const img = await this.doc.embedJpg(jpegBytes);
+    const img = await this.embedImage(jpegBytes);
     return { width: img.width, height: img.height };
   }
 

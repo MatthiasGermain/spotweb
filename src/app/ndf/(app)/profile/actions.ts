@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser, changePassword } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { uploadBlob, deleteBlobs } from "@/lib/ndf/blob";
-import { toJpegOnWhite } from "@/lib/ndf/image";
+import { normalizeImage, errMessage } from "@/lib/ndf/image";
 
 export async function updateProfileAction(formData: FormData) {
   const user = await requireUser();
@@ -59,17 +59,22 @@ export async function updateSignatureAction(formData: FormData) {
     redirect(`/ndf/profile?sigerror=${encodeURIComponent("Format non supporté (JPG, PNG, GIF, WEBP uniquement).")}`);
   }
 
+  let img;
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const jpeg = await toJpegOnWhite(buffer);
+    img = await normalizeImage(Buffer.from(await file.arrayBuffer()));
+  } catch (err) {
+    console.error("updateSignatureAction (image):", err);
+    redirect(`/ndf/profile?sigerror=${encodeURIComponent(`Image illisible : ${errMessage(err)}`)}`);
+  }
 
+  try {
     if (user.signatureUrl) await deleteBlobs([user.signatureUrl]);
-    const url = await uploadBlob(`ndf/users/${user.id}/signature.jpg`, jpeg, "image/jpeg");
-
+    const ext = img.contentType === "image/png" ? "png" : "jpg";
+    const url = await uploadBlob(`ndf/users/${user.id}/signature.${ext}`, img.buffer, img.contentType);
     await prisma.user.update({ where: { id: user.id }, data: { signatureUrl: url } });
   } catch (err) {
-    console.error("updateSignatureAction:", err);
-    redirect(`/ndf/profile?sigerror=${encodeURIComponent("Impossible de lire l'image.")}`);
+    console.error("updateSignatureAction (stockage):", err);
+    redirect(`/ndf/profile?sigerror=${encodeURIComponent(`Enregistrement impossible (stockage) : ${errMessage(err)}`)}`);
   }
 
   redirect("/ndf/profile?sigok=1");
