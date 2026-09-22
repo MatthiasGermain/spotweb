@@ -10,7 +10,7 @@ export async function deleteSubmissionAction(formData: FormData) {
   const id = String(formData.get("id") ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
 
   const submission = await prisma.submission.findUnique({ where: { id } });
-  if (submission && submission.userId === user.id && ["created", "draft"].includes(submission.status)) {
+  if (submission && submission.userId === user.id && ["created", "draft", "a_completer"].includes(submission.status)) {
     await prisma.submission.delete({ where: { id } });
     await deleteBlobs([submission.archiveUrl]);
   }

@@ -43,6 +43,7 @@ export default function AdminFilters({
           { value: "", label: "Tous les statuts" },
           { value: "created", label: "En attente" },
           { value: "processed", label: "Traitées" },
+          { value: "a_completer", label: "À compléter" },
           { value: "draft", label: "Brouillons" },
         ]}
         defaultValue={filterStatus}

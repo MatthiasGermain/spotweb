@@ -120,7 +120,7 @@ async function handleSubmit(request: Request) {
   const keptPjContents: { name: string; content: Buffer }[] = [];
   if (editId !== "") {
     const existing = await prisma.submission.findUnique({ where: { id: editId } });
-    if (existing && existing.userId === user.id && existing.status === "draft") {
+    if (existing && existing.userId === user.id && (existing.status === "draft" || existing.status === "a_completer")) {
       oldSubmission = { id: existing.id, archiveUrl: existing.archiveUrl };
       const keptRaw = formData.getAll("kept_pj[]").map(String);
       if (keptRaw.length > 0) {
