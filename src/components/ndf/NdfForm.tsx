@@ -24,6 +24,9 @@ export interface DraftData {
   paiement: "virement" | "cheque";
   lignes: { date: string; description: string; montant: number }[];
   pj: string[];
+  /** "draft" (brouillon) ou "a_completer" (renvoyée par le trésorier). */
+  status?: string;
+  reviewComment?: string;
 }
 
 function formatTotal(t: number): string {

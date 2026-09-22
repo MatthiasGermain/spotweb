@@ -43,7 +43,8 @@ model Submission {
   contexte    String   @default("")
   paiement    String
   total       Decimal  @db.Decimal(10, 2)
-  status      String   @default("created") // 'created' | 'processed' | 'draft'
+  status      String   @default("created") // 'created' | 'processed' | 'draft' | 'a_completer'
+  reviewComment String @default("") // motif du trésorier quand status = 'a_completer'
   lignes      Json
   pjNames     Json
   archiveUrl  String

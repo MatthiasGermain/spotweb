@@ -3,13 +3,14 @@ import { prisma } from "@/lib/ndf/db";
 import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associations";
 import { formatDateFr, formatMontant } from "@/lib/ndf/format";
 import AdminFilters from "@/components/ndf/AdminFilters";
+import RejectForm from "@/components/ndf/RejectForm";
 import { Download, CircleCheck, Undo2 } from "lucide-react";
-import { toggleStatusAction } from "./actions";
+import { toggleStatusAction, rejectSubmissionAction } from "./actions";
 
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ u?: string; status?: string; assoc?: string }>;
+  searchParams: Promise<{ u?: string; status?: string; assoc?: string; rejected?: string; mailerr?: string; error?: string }>;
 }) {
   await requireRole(["TRESORIER"]);
   const sp = await searchParams;
@@ -42,6 +43,14 @@ export default async function AdminPage({
 
   return (
     <div className="page">
+      {sp.rejected && <div className="alert alert-success mb-4">✓ Note renvoyée au demandeur.</div>}
+      {sp.mailerr && (
+        <div className="alert alert-error mb-4">
+          ⚠ La note a bien été renvoyée « à compléter », mais l&apos;e-mail au demandeur n&apos;a pas pu être envoyé : {sp.mailerr}
+        </div>
+      )}
+      {sp.error && <div className="alert alert-error mb-4">⚠ {sp.error}</div>}
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="card stat-card card-body">
           <div className="stat-label">Total (filtre)</div>
@@ -133,6 +142,10 @@ export default async function AdminPage({
                           <span className="badge badge-success">✓ Traitée</span>
                         ) : sub.status === "draft" ? (
                           <span className="badge badge-warning">✏ Brouillon</span>
+                        ) : sub.status === "a_completer" ? (
+                          <span className="badge badge-warning" title={sub.reviewComment} style={{ color: "#92400e" }}>
+                            ↩ À compléter
+                          </span>
                         ) : (
                           <span className="badge badge-secondary">En attente</span>
                         )}
@@ -154,7 +167,7 @@ export default async function AdminPage({
                               <button type="submit" className="btn btn-outline btn-sm btn-icon" data-tip="Annuler le traitement" aria-label="Annuler">
                                 <Undo2 className="size-4" />
                               </button>
-                            ) : (
+                            ) : sub.status !== "draft" && sub.status !== "a_completer" ? (
                               <button
                                 type="submit"
                                 className="btn btn-outline btn-sm btn-icon"
@@ -164,8 +177,11 @@ export default async function AdminPage({
                               >
                                 <CircleCheck className="size-4" />
                               </button>
-                            )}
+                            ) : null}
                           </form>
+                          {sub.status === "created" && (
+                            <RejectForm subId={sub.id} nom={sub.nom} action={rejectSubmissionAction} />
+                          )}
                         </div>
                       </td>
                     </tr>

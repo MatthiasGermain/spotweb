@@ -29,18 +29,26 @@ export default async function HistoryPage({
     total: Number(s.total),
     paiement: s.paiement,
     status: s.status,
+    reviewComment: s.reviewComment,
   }));
 
   const total = rows.reduce((sum, r) => sum + r.total, 0);
   const nbDraft = rows.filter((r) => r.status === "draft").length;
+  const nbRejected = rows.filter((r) => r.status === "a_completer").length;
   const nbPend = rows.filter((r) => r.status === "created").length;
-  const nbDone = rows.length - nbPend - nbDraft;
+  const nbDone = rows.length - nbPend - nbDraft - nbRejected;
 
   return (
     <div className="page">
       {deleted && <div className="alert alert-success mb-4">✓ Note de frais supprimée.</div>}
       {draftSaved && (
         <div className="alert alert-info mb-4">💾 Brouillon enregistré — modifiez-le ou soumettez-le quand vous êtes prêt.</div>
+      )}
+      {nbRejected > 0 && (
+        <div className="alert alert-error mb-4">
+          ↩ {nbRejected > 1 ? `${nbRejected} notes ont` : "Une note a"} été renvoyée{nbRejected > 1 ? "s" : ""} par le trésorier « à
+          compléter » — voir le motif dans le tableau ci-dessous.
+        </div>
       )}
 
       {rows.length > 0 && (
@@ -58,6 +66,15 @@ export default async function HistoryPage({
               <div className="stat-value">{nbDraft}</div>
               <div className="stat-sub" style={{ color: "#854d0e" }}>
                 à compléter
+              </div>
+            </div>
+          )}
+          {nbRejected > 0 && (
+            <div className="card stat-card card-body">
+              <div className="stat-label">Renvoyées</div>
+              <div className="stat-value">{nbRejected}</div>
+              <div className="stat-sub" style={{ color: "#991b1b" }}>
+                à corriger
               </div>
             </div>
           )}

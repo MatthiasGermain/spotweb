@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Pencil, Trash2, Clock } from "lucide-react";
+import { Download, Pencil, Trash2, Clock, Undo2 } from "lucide-react";
 import { formatDateFr, formatMontant } from "@/lib/ndf/format";
 
 export interface HistoryRow {
@@ -14,6 +14,7 @@ export interface HistoryRow {
   total: number;
   paiement: string;
   status: string;
+  reviewComment: string;
 }
 
 type SortKey = "createdAt" | "nom" | "periode" | "association" | "pjCount" | "total" | "paiement" | "status";
@@ -85,6 +86,11 @@ export default function HistoryTable({
                 </td>
                 <td>
                   <span className="font-medium">{sub.nom}</span>
+                  {sub.status === "a_completer" && sub.reviewComment && (
+                    <div className="text-xs mt-0.5" style={{ color: "#991b1b" }}>
+                      Motif : {sub.reviewComment}
+                    </div>
+                  )}
                 </td>
                 <td>{sub.periode}</td>
                 <td>{sub.association ? <span className={`badge ${assocCls}`}>{sub.association}</span> : "—"}</td>
@@ -104,6 +110,10 @@ export default function HistoryTable({
                     <span className="badge badge-success">✓ Traitée</span>
                   ) : sub.status === "draft" ? (
                     <span className="badge badge-warning">✏ Brouillon</span>
+                  ) : sub.status === "a_completer" ? (
+                    <span className="badge badge-warning" style={{ color: "#92400e" }}>
+                      <Undo2 className="size-3" /> À compléter
+                    </span>
                   ) : (
                     <span className="badge badge-secondary">
                       <Clock className="size-3" /> En attente
@@ -120,17 +130,17 @@ export default function HistoryTable({
                     >
                       <Download className="size-4" />
                     </a>
-                    {sub.status === "draft" && (
+                    {(sub.status === "draft" || sub.status === "a_completer") && (
                       <a
                         href={`/ndf?edit=${encodeURIComponent(sub.id)}`}
                         className="btn btn-outline btn-sm btn-icon"
-                        data-tip="Modifier ce brouillon"
+                        data-tip={sub.status === "draft" ? "Modifier ce brouillon" : "Corriger et renvoyer"}
                         aria-label="Modifier"
                       >
                         <Pencil className="size-4" />
                       </a>
                     )}
-                    {(sub.status === "draft" || sub.status === "created") && (
+                    {(sub.status === "draft" || sub.status === "created" || sub.status === "a_completer") && (
                       <form
                         action={deleteAction}
                         style={{ display: "contents" }}

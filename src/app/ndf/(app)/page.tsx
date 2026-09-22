@@ -39,7 +39,7 @@ export default async function HomePage({
   const editId = (sp.edit ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
   if (editId) {
     const sub = await prisma.submission.findUnique({ where: { id: editId } });
-    if (sub && sub.userId === user.id && sub.status === "draft") {
+    if (sub && sub.userId === user.id && (sub.status === "draft" || sub.status === "a_completer")) {
       const { month, year } = parsePeriode(sub.periode);
       draft = {
         id: sub.id,
@@ -51,6 +51,8 @@ export default async function HomePage({
         paiement: sub.paiement === "cheque" ? "cheque" : "virement",
         lignes: (sub.lignes as { date: string; description: string; montant: number }[]) ?? [],
         pj: (sub.pjNames as string[]) ?? [],
+        status: sub.status,
+        reviewComment: sub.reviewComment,
       };
     }
   }
@@ -73,7 +75,20 @@ export default async function HomePage({
         </div>
       )}
       {errorMsg && <div className="alert alert-error mb-4">⚠ {errorMsg}</div>}
-      {draft && <div className="alert alert-info mb-4">✏ Modification d&apos;un brouillon — complétez puis soumettez ou ré-enregistrez.</div>}
+      {draft && draft.status === "a_completer" ? (
+        <div className="alert alert-error mb-4">
+          ↩ Cette note vous a été renvoyée par le trésorier.
+          {draft.reviewComment && (
+            <>
+              {" "}
+              Motif : <strong>{draft.reviewComment}</strong>.
+            </>
+          )}{" "}
+          Corrigez-la puis soumettez-la à nouveau.
+        </div>
+      ) : (
+        draft && <div className="alert alert-info mb-4">✏ Modification d&apos;un brouillon — complétez puis soumettez ou ré-enregistrez.</div>
+      )}
 
       <NdfForm
         prefillNom={draft?.nom ?? prefillNom}
