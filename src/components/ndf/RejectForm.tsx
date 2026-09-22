@@ -17,6 +17,9 @@ export default function RejectForm({
   action: (formData: FormData) => void;
 }) {
   const [open, setOpen] = useState(false);
+  // Empêche l'envoi de plusieurs e-mails identiques si le trésorier clique plusieurs fois
+  // en attendant la réponse (la connexion SMTP peut prendre quelques secondes).
+  const [sending, setSending] = useState(false);
 
   if (!open) {
     return (
@@ -54,6 +57,7 @@ export default function RejectForm({
         className="card"
         style={{ width: "100%", maxWidth: "28rem" }}
         onClick={(e) => e.stopPropagation()}
+        onSubmit={() => setSending(true)}
       >
         <div className="card-header">
           <div className="card-title">Renvoyer la note de {nom}</div>
@@ -68,14 +72,15 @@ export default function RejectForm({
               rows={4}
               required
               autoFocus
+              disabled={sending}
               placeholder="Ex. : merci de joindre le ticket de caisse manquant pour la ligne du 12/03."
             />
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="btn btn-primary">
-              Renvoyer à compléter
+            <button type="submit" className="btn btn-primary" disabled={sending}>
+              {sending ? "Envoi…" : "Renvoyer à compléter"}
             </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>
+            <button type="button" className="btn btn-secondary" disabled={sending} onClick={() => setOpen(false)}>
               Annuler
             </button>
           </div>

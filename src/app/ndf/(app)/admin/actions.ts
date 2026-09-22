@@ -29,10 +29,14 @@ export async function rejectSubmissionAction(formData: FormData) {
   const submission = await prisma.submission.findUnique({ where: { id: subId }, include: { user: true } });
   if (!submission) redirect("/ndf/admin");
 
-  await prisma.submission.update({
-    where: { id: subId },
+  // Mise à jour conditionnée au statut actuel ("created") : si la note a déjà été renvoyée
+  // (double clic, second onglet, nouvelle tentative après une réponse SMTP lente…), `count`
+  // vaut 0 et on ne renvoie pas de second e-mail — c'est ce qui provoquait les envois en double.
+  const { count } = await prisma.submission.updateMany({
+    where: { id: subId, status: "created" },
     data: { status: "a_completer", reviewComment: comment },
   });
+  if (count === 0) redirect("/ndf/admin?rejected=1");
 
   const { user } = submission;
   const prenomDisplay = user.prenom.trim() !== "" ? user.prenom.trim() : submission.nom;
