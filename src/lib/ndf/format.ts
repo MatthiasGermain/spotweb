@@ -14,6 +14,12 @@ export function formatDateFr(iso: string | Date): string {
   }
 }
 
+/** Année d'une date, à l'heure de Paris (cohérent avec formatDateFr — évite un décalage autour du 31/12-1/1 en UTC). */
+export function parisYear(d: string | Date): number {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return Number(new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", year: "numeric" }).format(dt));
+}
+
 export function formatMontant(m: number): string {
   return (
     m

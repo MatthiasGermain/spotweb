@@ -4,22 +4,14 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import ShadSelect from "./ShadSelect";
 
-export default function AdminFilters({
-  people,
-  associations,
+export default function HistoryFilters({
   years,
-  filterUser,
-  filterStatus,
-  filterAssoc,
   filterYear,
+  filterStatus,
 }: {
-  people: { value: string; label: string }[];
-  associations: string[];
   years: number[];
-  filterUser: string;
-  filterStatus: string;
-  filterAssoc: string;
   filterYear: string;
+  filterStatus: string;
 }) {
   const router = useRouter();
 
@@ -30,26 +22,19 @@ export default function AdminFilters({
     router.push(url.pathname + url.search);
   }
 
-  const isDefault = filterUser === "" && filterStatus === "" && filterAssoc === "" && filterYear === "";
+  const isDefault = filterYear === "" && filterStatus === "";
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <ShadSelect
-        name="__fy"
+        name="__hy"
         options={[{ value: "", label: "Toutes les années" }, ...years.map((y) => ({ value: String(y), label: String(y) }))]}
         defaultValue={filterYear}
         placeholder="Année"
         onValueChange={(v) => applyFilter("y", v)}
       />
       <ShadSelect
-        name="__fu"
-        options={[{ value: "", label: "Toutes les personnes" }, ...people]}
-        defaultValue={filterUser}
-        placeholder="Personne"
-        onValueChange={(v) => applyFilter("u", v)}
-      />
-      <ShadSelect
-        name="__fs"
+        name="__hs"
         options={[
           { value: "", label: "Tous les statuts" },
           { value: "created", label: "En attente" },
@@ -61,15 +46,8 @@ export default function AdminFilters({
         placeholder="Statut"
         onValueChange={(v) => applyFilter("status", v)}
       />
-      <ShadSelect
-        name="__fa"
-        options={[{ value: "", label: "Toutes les associations" }, ...associations.map((a) => ({ value: a, label: a }))]}
-        defaultValue={filterAssoc}
-        placeholder="Association"
-        onValueChange={(v) => applyFilter("assoc", v)}
-      />
       {!isDefault && (
-        <a href="/ndf/admin" className="btn btn-ghost btn-sm" style={{ color: "var(--muted-foreground)" }}>
+        <a href="/ndf/history" className="btn btn-ghost btn-sm" style={{ color: "var(--muted-foreground)" }}>
           <X className="size-3.5" /> Réinit.
         </a>
       )}
