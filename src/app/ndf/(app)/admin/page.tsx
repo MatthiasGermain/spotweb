@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associations";
-import { formatDateFr, formatMontant } from "@/lib/ndf/format";
+import { formatDateFr, formatMontant, parisYear } from "@/lib/ndf/format";
 import AdminFilters from "@/components/ndf/AdminFilters";
 import RejectForm from "@/components/ndf/RejectForm";
 import { Download, CircleCheck, Undo2 } from "lucide-react";
@@ -10,7 +10,15 @@ import { toggleStatusAction, rejectSubmissionAction } from "./actions";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ u?: string; status?: string; assoc?: string; rejected?: string; mailerr?: string; error?: string }>;
+  searchParams: Promise<{
+    u?: string;
+    status?: string;
+    assoc?: string;
+    y?: string;
+    rejected?: string;
+    mailerr?: string;
+    error?: string;
+  }>;
 }) {
   await requireRole(["TRESORIER"]);
   const sp = await searchParams;
@@ -18,20 +26,31 @@ export default async function AdminPage({
   const filterUser = sp.u ?? "";
   const filterStatus = sp.status ?? "";
   const filterAssoc = sp.assoc ?? "";
+  const filterYear = sp.y ?? "";
 
-  const users = await prisma.user.findMany({ select: { username: true } });
+  const users = await prisma.user.findMany({
+    select: { username: true, prenom: true, nom: true },
+    orderBy: [{ prenom: "asc" }, { nom: "asc" }],
+  });
   await ensureDefaultAssociations();
   const assocList = await getAssociations();
 
-  const submissions = await prisma.submission.findMany({
+  // Années disponibles pour le sélecteur : indépendantes des autres filtres actifs.
+  const allDates = await prisma.submission.findMany({ select: { createdAt: true } });
+  const years = [...new Set(allDates.map((d) => parisYear(d.createdAt)))].sort((a, b) => b - a);
+
+  const submissionsRaw = await prisma.submission.findMany({
     where: {
       ...(filterUser ? { user: { username: filterUser } } : {}),
       ...(filterStatus ? { status: filterStatus } : {}),
       ...(filterAssoc ? { association: filterAssoc } : {}),
     },
-    include: { user: { select: { username: true } } },
+    include: { user: { select: { username: true, prenom: true, nom: true } } },
     orderBy: { createdAt: "desc" },
   });
+  const submissions = filterYear
+    ? submissionsRaw.filter((s) => String(parisYear(s.createdAt)) === filterYear)
+    : submissionsRaw;
 
   const totalAll = submissions.reduce((s, sub) => s + Number(sub.total), 0);
   const totalPending = submissions
@@ -77,11 +96,13 @@ export default async function AdminPage({
         <div className="card-header flex items-center justify-between gap-4 flex-wrap">
           <div className="card-title">Notes de frais</div>
           <AdminFilters
-            usernames={users.map((u) => u.username)}
+            people={users.map((u) => ({ value: u.username, label: `${u.prenom} ${u.nom}`.trim() || u.username }))}
             associations={assocList.map((a) => a.nom)}
+            years={years}
             filterUser={filterUser}
             filterStatus={filterStatus}
             filterAssoc={filterAssoc}
+            filterYear={filterYear}
           />
         </div>
 

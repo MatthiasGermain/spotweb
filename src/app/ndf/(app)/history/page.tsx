@@ -1,23 +1,33 @@
 import { requireUser } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
-import { formatMontant } from "@/lib/ndf/format";
+import { formatMontant, parisYear } from "@/lib/ndf/format";
 import HistoryTable, { type HistoryRow } from "@/components/ndf/HistoryTable";
+import HistoryFilters from "@/components/ndf/HistoryFilters";
 import { deleteSubmissionAction } from "./actions";
 
 export default async function HistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ deleted?: string; draft_saved?: string }>;
+  searchParams: Promise<{ deleted?: string; draft_saved?: string; y?: string; status?: string }>;
 }) {
   const user = await requireUser();
   const sp = await searchParams;
   const deleted = sp.deleted !== undefined;
   const draftSaved = sp.draft_saved !== undefined;
+  const filterYear = sp.y ?? "";
+  const filterStatus = sp.status ?? "";
 
-  const submissions = await prisma.submission.findMany({
-    where: { userId: user.id },
+  // Années disponibles pour le sélecteur : indépendantes du filtre actif.
+  const allDates = await prisma.submission.findMany({ where: { userId: user.id }, select: { createdAt: true } });
+  const years = [...new Set(allDates.map((d) => parisYear(d.createdAt)))].sort((a, b) => b - a);
+
+  const submissionsRaw = await prisma.submission.findMany({
+    where: { userId: user.id, ...(filterStatus ? { status: filterStatus } : {}) },
     orderBy: { createdAt: "desc" },
   });
+  const submissions = filterYear
+    ? submissionsRaw.filter((s) => String(parisYear(s.createdAt)) === filterYear)
+    : submissionsRaw;
 
   const rows: HistoryRow[] = submissions.map((s) => ({
     id: s.id,
@@ -94,17 +104,26 @@ export default async function HistoryPage({
       )}
 
       <div className="card">
-        <div className="card-header">
+        <div className="card-header flex items-center justify-between gap-4 flex-wrap">
           <div className="card-title">Mes notes de frais</div>
+          {(years.length > 0 || filterYear || filterStatus) && (
+            <HistoryFilters years={years} filterYear={filterYear} filterStatus={filterStatus} />
+          )}
         </div>
 
         {rows.length === 0 ? (
           <div className="card-body text-center py-16" style={{ color: "var(--muted-foreground)" }}>
             <div className="text-4xl mb-3">📂</div>
-            <p className="mb-4">Aucune note enregistrée.</p>
-            <a href="/ndf" className="btn btn-primary">
-              Créer ma première note de frais
-            </a>
+            {filterYear || filterStatus ? (
+              <p className="mb-4">Aucune note pour ce filtre.</p>
+            ) : (
+              <>
+                <p className="mb-4">Aucune note enregistrée.</p>
+                <a href="/ndf" className="btn btn-primary">
+                  Créer ma première note de frais
+                </a>
+              </>
+            )}
           </div>
         ) : (
           <HistoryTable rows={rows} deleteAction={deleteSubmissionAction} />
