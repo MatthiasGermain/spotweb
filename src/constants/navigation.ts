@@ -15,4 +15,4 @@ export const SOCIAL_ITEMS = [
   { label: "LinkedIn", link: SOCIAL_LINKS.linkedin },
 ] as const;
 
-export const CONTACT_EMAIL = "contact@spotlightcrea.com" as const;
+export const CONTACT_EMAIL = "contact@spotlightcrea.fr" as const;
