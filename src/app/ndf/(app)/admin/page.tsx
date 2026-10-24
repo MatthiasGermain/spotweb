@@ -4,8 +4,9 @@ import { ensureDefaultAssociations, getAssociations } from "@/lib/ndf/associatio
 import { formatDateFr, formatMontant, parisYear } from "@/lib/ndf/format";
 import AdminFilters from "@/components/ndf/AdminFilters";
 import RejectForm from "@/components/ndf/RejectForm";
-import { Download, CircleCheck, Undo2 } from "lucide-react";
-import { toggleStatusAction, rejectSubmissionAction } from "./actions";
+import ConfirmForm from "@/components/ndf/ConfirmForm";
+import { Download, CircleCheck, Undo2, Trash2 } from "lucide-react";
+import { toggleStatusAction, rejectSubmissionAction, deleteSubmissionAdminAction } from "./actions";
 
 export default async function AdminPage({
   searchParams,
@@ -16,6 +17,7 @@ export default async function AdminPage({
     assoc?: string;
     y?: string;
     rejected?: string;
+    deleted?: string;
     mailerr?: string;
     error?: string;
   }>;
@@ -62,6 +64,7 @@ export default async function AdminPage({
 
   return (
     <div className="page">
+      {sp.deleted && <div className="alert alert-success mb-4">✓ Note de frais supprimée.</div>}
       {sp.rejected && <div className="alert alert-success mb-4">✓ Note renvoyée au demandeur.</div>}
       {sp.mailerr && (
         <div className="alert alert-error mb-4">
@@ -203,6 +206,26 @@ export default async function AdminPage({
                           {sub.status === "created" && (
                             <RejectForm subId={sub.id} nom={sub.nom} action={rejectSubmissionAction} />
                           )}
+                          <ConfirmForm
+                            action={deleteSubmissionAdminAction}
+                            style={{ display: "contents" }}
+                            confirmMessage={
+                              `Supprimer définitivement la note de ${sub.nom || sub.user.username} (${sub.periode}, ${formatMontant(Number(sub.total))}) ?` +
+                              (sub.status === "processed" ? "\n\nAttention : cette note est déjà traitée (remboursée)." : "") +
+                              "\n\nL'archive et les pièces jointes seront effacées. Action irréversible."
+                            }
+                          >
+                            <input type="hidden" name="sub_id" value={sub.id} />
+                            <button
+                              type="submit"
+                              className="btn btn-outline btn-sm btn-icon"
+                              data-tip="Supprimer la note"
+                              aria-label="Supprimer"
+                              style={{ color: "var(--destructive)", borderColor: "oklch(0.92 0.05 25)" }}
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </ConfirmForm>
                         </div>
                       </td>
                     </tr>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireRole, getTresorierEmails } from "@/lib/ndf/auth";
 import { prisma } from "@/lib/ndf/db";
 import { sendNdfRejection } from "@/lib/ndf/mail";
+import { deleteBlobs } from "@/lib/ndf/blob";
 
 export async function toggleStatusAction(formData: FormData) {
   await requireRole(["TRESORIER"]);
@@ -59,4 +60,20 @@ export async function rejectSubmissionAction(formData: FormData) {
   }
 
   redirect(`/ndf/admin${mailErr ? `?mailerr=${encodeURIComponent(mailErr)}` : "?rejected=1"}`);
+}
+
+/** Suppression d'une note par le trésorier, quel que soit son statut (y compris traitée). */
+export async function deleteSubmissionAdminAction(formData: FormData) {
+  await requireRole(["TRESORIER"]);
+
+  const subId = String(formData.get("sub_id") ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
+  const submission = subId ? await prisma.submission.findUnique({ where: { id: subId } }) : null;
+  if (!submission) {
+    redirect(`/ndf/admin?error=${encodeURIComponent("Note introuvable (déjà supprimée ?).")}`);
+  }
+
+  await prisma.submission.delete({ where: { id: subId } });
+  await deleteBlobs([submission.archiveUrl]);
+
+  redirect("/ndf/admin?deleted=1");
 }
